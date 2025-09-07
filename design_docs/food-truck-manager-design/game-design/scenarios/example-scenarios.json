@@ -1,0 +1,230 @@
+{
+  "early_scenarios": [
+    {
+      "id": "first-customer",
+      "title": "Your First Customer", 
+      "text": "A friendly local approaches your truck with a big smile. They're excited to try your food but seem unsure about what to order from your menu.",
+      "choices": [
+        {
+          "id": "recommend-special",
+          "label": "Enthusiastically recommend today's special",
+          "effects": {
+            "money": 8,
+            "reputation": 6,
+            "energy": -2
+          }
+        },
+        {
+          "id": "explain-menu",
+          "label": "Patiently explain each menu item",
+          "effects": {
+            "money": 5,
+            "reputation": 8,
+            "energy": -4
+          }
+        },
+        {
+          "id": "let-browse",
+          "label": "Let them browse while you prep for next customer",
+          "effects": {
+            "money": 3,
+            "reputation": 2,
+            "energy": -1
+          }
+        }
+      ],
+      "tags": ["customer-service"],
+      "difficulty": "early",
+      "createdBy": "static"
+    },
+    {
+      "id": "permit-reminder", 
+      "title": "Permit Renewal Notice",
+      "text": "You receive a reminder that your business permit expires in two weeks. The renewal fee is due, and you need to plan for the paperwork.",
+      "choices": [
+        {
+          "id": "renew-immediately",
+          "label": "Renew immediately to avoid any issues",
+          "effects": {
+            "money": -25,
+            "reputation": 5,
+            "energy": -3
+          }
+        },
+        {
+          "id": "wait-until-closer",
+          "label": "Wait until closer to deadline to preserve cash flow",
+          "effects": {
+            "money": -20,
+            "reputation": 0,
+            "energy": -1
+          }
+        },
+        {
+          "id": "research-discounts",
+          "label": "Research if there are any renewal discounts available",
+          "effects": {
+            "money": -18,
+            "reputation": 2,
+            "energy": -5
+          }
+        }
+      ],
+      "tags": ["permits"],
+      "difficulty": "early", 
+      "createdBy": "static"
+    }
+  ],
+  "mid_scenarios": [
+    {
+      "id": "equipment-upgrade-decision",
+      "title": "Equipment Upgrade Opportunity",
+      "text": "A restaurant supply company is offering a deal on a new high-efficiency grill that could speed up your cooking time by 30%, but it's a significant investment.",
+      "choices": [
+        {
+          "id": "buy-upgrade",
+          "label": "Purchase the new grill with financing",
+          "effects": {
+            "money": -40,
+            "reputation": 8,
+            "energy": 5
+          }
+        },
+        {
+          "id": "negotiate-trial",
+          "label": "Negotiate a trial period before committing",
+          "effects": {
+            "money": -10,
+            "reputation": 3,
+            "energy": -3
+          }
+        },
+        {
+          "id": "stick-current",
+          "label": "Stick with current equipment to preserve capital",
+          "effects": {
+            "money": 5,
+            "reputation": -2,
+            "energy": -2
+          }
+        }
+      ],
+      "tags": ["equipment", "expansion"],
+      "difficulty": "mid",
+      "createdBy": "static"
+    },
+    {
+      "id": "weather-closure",
+      "title": "Severe Weather Warning", 
+      "text": "A severe thunderstorm warning has been issued for the next 4 hours. You're in the middle of lunch prep with ingredients that will spoil if not used today.",
+      "choices": [
+        {
+          "id": "close-early-safety",
+          "label": "Close early and prioritize safety",
+          "effects": {
+            "money": -15,
+            "reputation": 6,
+            "energy": 3
+          }
+        },
+        {
+          "id": "covered-location",
+          "label": "Try to find a covered location to continue service",
+          "effects": {
+            "money": -5,
+            "reputation": 4,
+            "energy": -8
+          }
+        },
+        {
+          "id": "ride-out-storm",
+          "label": "Stay put and serve through the weather",
+          "effects": {
+            "money": 12,
+            "reputation": -6,
+            "energy": -12
+          }
+        }
+      ],
+      "tags": ["weather", "crisis"],
+      "difficulty": "mid",
+      "createdBy": "static"
+    }
+  ],
+  "late_scenarios": [
+    {
+      "id": "expansion-opportunity",
+      "title": "Second Truck Opportunity",
+      "text": "A successful food truck owner is retiring and has offered to sell you their established truck, customer base, and prime location permit at a fair price.",
+      "choices": [
+        {
+          "id": "buy-second-truck",
+          "label": "Take the loan and buy the second truck",
+          "effects": {
+            "money": -60,
+            "reputation": 15,
+            "energy": -12
+          }
+        },
+        {
+          "id": "partnership-proposal",
+          "label": "Propose a partnership instead of outright purchase",
+          "effects": {
+            "money": -25,
+            "reputation": 8,
+            "energy": -8
+          }
+        },
+        {
+          "id": "focus-current",
+          "label": "Focus on perfecting your current operation",
+          "effects": {
+            "money": 10,
+            "reputation": 3,
+            "energy": 2
+          }
+        }
+      ],
+      "tags": ["expansion", "strategic"],
+      "difficulty": "late",
+      "createdBy": "static"
+    },
+    {
+      "id": "viral-social-media",
+      "title": "Viral Social Media Moment",
+      "text": "A food blogger's video of your truck has gone viral overnight. You're expecting massive crowds but your current setup can't handle the volume.",
+      "choices": [
+        {
+          "id": "hire-temp-staff",
+          "label": "Hire temporary staff and stock extra supplies",
+          "effects": {
+            "money": -35,
+            "reputation": 20,
+            "energy": -15
+          }
+        },
+        {
+          "id": "limited-menu",
+          "label": "Offer a simplified menu to handle volume",
+          "effects": {
+            "money": 15,
+            "reputation": 8,
+            "energy": -10
+          }
+        },
+        {
+          "id": "normal-operations",
+          "label": "Continue normal operations and let people wait",
+          "effects": {
+            "money": 25,
+            "reputation": -8,
+            "energy": -18
+          }
+        }
+      ],
+      "tags": ["community-event", "crisis"],
+      "difficulty": "late",
+      "createdBy": "static"
+    }
+  ]
+}
