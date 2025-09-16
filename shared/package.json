@@ -1,0 +1,40 @@
+{
+  "name": "@food-truck-manager/shared",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && cp -r scenarios/*.json dist/scenarios/",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.1",
+    "typescript": "^5.9.2"
+  },
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "require": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./engine": {
+      "require": "./dist/engine/index.js",
+      "types": "./dist/engine/index.d.ts"
+    },
+    "./scenarios": {
+      "require": "./dist/scenarios/index.js",
+      "types": "./dist/scenarios/index.d.ts"
+    },
+    "./utils": {
+      "require": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    }
+  }
+}

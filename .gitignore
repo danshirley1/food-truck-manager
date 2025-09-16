@@ -1,0 +1,4 @@
+settings.local.json
+app/dist
+shared/dist
+node_modules
