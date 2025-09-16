@@ -2,9 +2,9 @@
  * Main game controller for CLI version
  */
 
-import { GameState, Scenario, Choice, ScenarioContext } from '../types';
-import { GameStateManager } from '../engine/game-state';
-import { ScenarioLoader } from '../scenarios/scenario-loader';
+import { GameState, Scenario, Choice, ScenarioContext } from '@food-truck-manager/shared';
+import { GameStateManager } from '@food-truck-manager/shared';
+import { ScenarioLoader } from '@food-truck-manager/shared';
 import { Display } from './display';
 import { Input } from './input';
 

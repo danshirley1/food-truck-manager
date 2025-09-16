@@ -1,0 +1,23 @@
+{
+  "name": "@food-truck-manager/shared",
+  "version": "1.0.0",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.1",
+    "typescript": "^5.9.2"
+  },
+  "exports": {
+    "./types": "./types/index.js",
+    "./engine": "./engine/index.js",
+    "./scenarios": "./scenarios/index.js",
+    "./utils": "./utils/index.js"
+  }
+}

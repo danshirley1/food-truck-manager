@@ -2,8 +2,8 @@
  * CLI display utilities for Food Truck Manager
  */
 
-import { GameState, Scenario, Choice, Resources } from '../types';
-import { formatResourceChange } from '../utils/helpers';
+import { GameState, Scenario, Choice, Resources } from '@food-truck-manager/shared';
+import { formatResourceChange } from '@food-truck-manager/shared';
 import chalk from 'chalk';
 
 export class Display {
