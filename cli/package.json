@@ -1,11 +1,11 @@
 {
-  "name": "food-truck-manager",
+  "name": "@food-truck-manager/cli",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node src/cli/index.ts",
-    "start": "node dist/cli/index.js",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },

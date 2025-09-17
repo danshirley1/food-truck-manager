@@ -30,7 +30,7 @@ yarn dev:cli
 ## 📁 Project Structure
 
 ```
-├── app/          # CLI version (Node.js + TypeScript)
+├── cli/          # CLI version (Node.js + TypeScript)
 ├── web/          # Web version (Next.js + React)
 ├── shared/       # Common game logic (TypeScript)
 └── package.json  # Development orchestration
@@ -102,7 +102,7 @@ The project demonstrates modern software engineering with shared business logic:
 ## 📚 Documentation
 
 - **Design Docs**: `design_docs/food-truck-manager-design/`
-- **CLI README**: `app/README.md`
+- **CLI README**: `cli/README.md`
 - **Web README**: `web/README.md`
 
 ---
