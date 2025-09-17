@@ -108,7 +108,7 @@ export class GameStateManager {
       return { gameOver: true, endReason: 'reputation-death' };
     }
     
-    if (resources.money <= -500) {
+    if (resources.money <= 0) {
       return { gameOver: true, endReason: 'bankruptcy' };
     }
 

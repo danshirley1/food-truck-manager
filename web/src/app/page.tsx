@@ -4,8 +4,12 @@ import { useEffect } from 'react';
 import { GameBoard } from '@/components/GameBoard';
 import { ScenarioCard } from '@/components/ScenarioCard';
 import { GameOverCard } from '@/components/GameOverCard';
+import { LoadingCard } from '@/components/LoadingCard';
 import { useGame } from '@/hooks/useGame';
 import { Choice } from '@/lib/shared';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Truck, Play } from 'lucide-react';
 
 export default function Home() {
   const {
@@ -36,19 +40,23 @@ export default function Home() {
   if (gameState.turn === 0 && !currentScenario) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="text-6xl mb-4">🚚</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Food Truck Manager</h1>
-          <p className="text-gray-600 mb-6">
-            Manage your food truck through 15 days of business! Balance your money, reputation, and energy to succeed.
-          </p>
-          <button
-            onClick={handleStartGame}
-            className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-          >
-            Start Your Food Truck Adventure
-          </button>
-        </div>
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
+              <Truck className="w-8 h-8 text-orange-600" />
+            </div>
+            <CardTitle className="text-2xl">Food Truck Manager</CardTitle>
+            <CardDescription className="text-base">
+              Manage your food truck through 15 days of business! Balance your money, reputation, and energy to succeed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleStartGame} className="w-full" size="lg">
+              <Play className="w-4 h-4 mr-2" />
+              Start Your Food Truck Adventure
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -71,10 +79,7 @@ export default function Home() {
         )}
 
         {isLoading && !gameState.gameOver && (
-          <div className="bg-white rounded-lg shadow-lg p-6 text-center">
-            <div className="text-2xl mb-2">⏳</div>
-            <div className="text-gray-600">Loading next scenario...</div>
-          </div>
+          <LoadingCard />
         )}
       </div>
     </div>
