@@ -211,17 +211,27 @@ const STATIC_SCENARIOS: Scenario[] = [
 ];
 
 export class WebScenarioLoader {
-  private static scenarios = STATIC_SCENARIOS;
+  private static scenarios = STATIC_SCENARIOS.map(scenario => ({
+    ...scenario,
+    createdAt: scenario.createdAt || new Date('2024-01-01')
+  }));
 
   /**
    * Get a random scenario based on context (web version)
    */
   static getScenario(context: ScenarioContext): Scenario | null {
     try {
+      console.log('WebScenarioLoader context:', context);
+      console.log('Total scenarios available:', this.scenarios.length);
+
       const availableScenarios = this.filterScenariosByContext(context);
+      console.log('Filtered scenarios:', availableScenarios.length);
 
       if (availableScenarios.length === 0) {
         console.warn('No scenarios available for context:', context);
+        // Debug: show what difficulties we have
+        const difficulties = this.scenarios.map(s => s.difficulty);
+        console.log('Available difficulties:', [...new Set(difficulties)]);
         return null;
       }
 
@@ -238,24 +248,32 @@ export class WebScenarioLoader {
    * Filter scenarios by context
    */
   private static filterScenariosByContext(context: ScenarioContext): Scenario[] {
-    return this.scenarios.filter(scenario => {
+    const filtered = this.scenarios.filter(scenario => {
       // Filter by difficulty level
       if (scenario.difficulty !== context.difficultyLevel) {
         return false;
       }
 
-      // Avoid repeating recent scenario types
-      if (context.recentChoices.length > 0) {
+      return true;
+    });
+
+    // If we have scenarios for this difficulty, try to avoid recent repeats
+    // But if filtering would leave us with no scenarios, include all for this difficulty
+    if (context.recentChoices.length > 0) {
+      const nonRecentScenarios = filtered.filter(scenario => {
         const hasRecentTag = scenario.tags.some(tag =>
           context.recentChoices.includes(tag)
         );
-        if (hasRecentTag && context.recentChoices.length > 1) {
-          return false; // Skip if we've seen this type recently
-        }
-      }
+        return !hasRecentTag;
+      });
 
-      return true;
-    });
+      // Only apply recent choice filtering if we still have scenarios left
+      if (nonRecentScenarios.length > 0) {
+        return nonRecentScenarios;
+      }
+    }
+
+    return filtered;
   }
 
   /**
