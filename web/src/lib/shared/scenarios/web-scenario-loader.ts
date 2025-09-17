@@ -3,7 +3,7 @@
  * Uses inline JSON data instead of file system operations
  */
 
-import { Scenario, DifficultyLevel, ScenarioTag, ScenarioContext } from '../types';
+import { Scenario, DifficultyLevel, ScenarioTag, ScenarioContext } from '@food-truck-manager/shared';
 
 // Static scenarios data (normally this would be imported from a JSON file or API)
 const STATIC_SCENARIOS: Scenario[] = [
