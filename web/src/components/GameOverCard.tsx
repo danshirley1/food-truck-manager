@@ -1,6 +1,10 @@
 'use client';
 
 import { GameState } from '@/lib/shared';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Trophy, XCircle, RotateCcw, Coins, Star, Zap } from 'lucide-react';
 
 interface GameOverCardProps {
   gameState: GameState;
@@ -8,94 +12,108 @@ interface GameOverCardProps {
 }
 
 export function GameOverCard({ gameState, onRestart }: GameOverCardProps) {
-  const getEndReasonMessage = () => {
+  const getEndReasonData = () => {
     switch (gameState.endReason) {
       case 'victory':
         return {
-          title: '🎉 Congratulations!',
+          icon: <Trophy className="w-12 h-12 text-yellow-500" />,
+          title: 'Victory!',
           message: 'You successfully managed your food truck for 15 days!',
-          bgColor: 'bg-green-50',
-          borderColor: 'border-green-500',
-          textColor: 'text-green-800'
+          variant: 'default' as const,
+          bgClass: 'bg-green-50 border-green-200'
         };
       case 'burnout':
         return {
-          title: '😴 Game Over - Burnout',
+          icon: <XCircle className="w-12 h-12 text-red-500" />,
+          title: 'Burnout',
           message: 'You collapsed from exhaustion. Running a food truck is tough work!',
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-500',
-          textColor: 'text-red-800'
+          variant: 'destructive' as const,
+          bgClass: 'bg-red-50 border-red-200'
         };
       case 'reputation-death':
         return {
-          title: '💔 Game Over - Reputation Ruined',
+          icon: <XCircle className="w-12 h-12 text-red-500" />,
+          title: 'Reputation Ruined',
           message: 'Word spread about poor service. No customers want to visit your truck.',
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-500',
-          textColor: 'text-red-800'
+          variant: 'destructive' as const,
+          bgClass: 'bg-red-50 border-red-200'
         };
       case 'bankruptcy':
         return {
-          title: '💸 Game Over - Bankruptcy',
+          icon: <XCircle className="w-12 h-12 text-red-500" />,
+          title: 'Bankruptcy',
           message: 'You ran out of money and had to close down the business.',
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-500',
-          textColor: 'text-red-800'
+          variant: 'destructive' as const,
+          bgClass: 'bg-red-50 border-red-200'
         };
       default:
         return {
-          title: '🏁 Game Over',
+          icon: <XCircle className="w-12 h-12 text-gray-500" />,
+          title: 'Game Over',
           message: 'Your food truck adventure has ended.',
-          bgColor: 'bg-gray-50',
-          borderColor: 'border-gray-500',
-          textColor: 'text-gray-800'
+          variant: 'secondary' as const,
+          bgClass: 'bg-gray-50 border-gray-200'
         };
     }
   };
 
-  const { title, message, bgColor, borderColor, textColor } = getEndReasonMessage();
+  const { icon, title, message, variant, bgClass } = getEndReasonData();
 
   return (
-    <div className={`rounded-lg border-l-4 ${bgColor} ${borderColor} p-6 mb-6`}>
-      <div className={`font-bold text-xl mb-2 ${textColor}`}>
-        {title}
-      </div>
-      <p className={`mb-4 ${textColor}`}>
-        {message}
-      </p>
+    <Card className={`w-full max-w-md mx-auto ${bgClass}`}>
+      <CardHeader className="text-center pb-4">
+        <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-background flex items-center justify-center">
+          {icon}
+        </div>
+        <CardTitle className="text-2xl">{title}</CardTitle>
+        <CardDescription className="text-base">{message}</CardDescription>
+      </CardHeader>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="text-center">
-          <div className="text-2xl mb-1">💰</div>
-          <div className="text-sm text-gray-600">Final Money</div>
-          <div className="font-bold">${gameState.resources.money}</div>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center">
+            <div className="flex justify-center mb-2">
+              <div className="p-2 rounded-full bg-green-100">
+                <Coins className="w-4 h-4 text-green-600" />
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground mb-1">Money</div>
+            <div className="font-bold">${gameState.resources.money}</div>
+          </div>
+          <div className="text-center">
+            <div className="flex justify-center mb-2">
+              <div className="p-2 rounded-full bg-yellow-100">
+                <Star className="w-4 h-4 text-yellow-600" />
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground mb-1">Reputation</div>
+            <div className="font-bold">{gameState.resources.reputation}%</div>
+          </div>
+          <div className="text-center">
+            <div className="flex justify-center mb-2">
+              <div className="p-2 rounded-full bg-blue-100">
+                <Zap className="w-4 h-4 text-blue-600" />
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground mb-1">Energy</div>
+            <div className="font-bold">{gameState.resources.energy}%</div>
+          </div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl mb-1">⭐</div>
-          <div className="text-sm text-gray-600">Final Reputation</div>
-          <div className="font-bold">{gameState.resources.reputation}%</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl mb-1">⚡</div>
-          <div className="text-sm text-gray-600">Final Energy</div>
-          <div className="font-bold">{gameState.resources.energy}%</div>
-        </div>
-      </div>
 
-      {gameState.score && (
-        <div className="text-center mb-4">
-          <div className="text-2xl font-bold text-yellow-600">🏆 Final Score: {gameState.score}</div>
-        </div>
-      )}
+        {gameState.score && (
+          <div className="text-center">
+            <Badge variant="outline" className="text-lg px-4 py-2">
+              <Trophy className="w-4 h-4 mr-2" />
+              Final Score: {gameState.score}
+            </Badge>
+          </div>
+        )}
 
-      <div className="text-center">
-        <button
-          onClick={onRestart}
-          className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
-        >
+        <Button className="w-full" onClick={onRestart} size="lg">
+          <RotateCcw className="w-4 h-4 mr-2" />
           Play Again
-        </button>
-      </div>
-    </div>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

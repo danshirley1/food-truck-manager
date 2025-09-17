@@ -1,6 +1,10 @@
 'use client';
 
 import { Scenario, Choice } from '@/lib/shared';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Coins, Star, Zap, Target } from 'lucide-react';
 
 interface ScenarioCardProps {
   scenario: Scenario;
@@ -14,9 +18,9 @@ export function ScenarioCard({ scenario, onChoice, disabled }: ScenarioCardProps
     return value > 0 ? `+${value}` : `${value}`;
   };
 
-  const getEffectColor = (value: number | undefined): string => {
-    if (!value) return '';
-    return value > 0 ? 'text-green-600' : 'text-red-600';
+  const getEffectVariant = (value: number | undefined) => {
+    if (!value) return 'secondary';
+    return value > 0 ? 'default' : 'destructive';
   };
 
   const renderEffects = (effects: Choice['effects']) => {
@@ -24,58 +28,70 @@ export function ScenarioCard({ scenario, onChoice, disabled }: ScenarioCardProps
 
     if (effects.money) {
       items.push(
-        <span key="money" className={`inline-flex items-center ${getEffectColor(effects.money)}`}>
-          💰 {formatResourceChange(effects.money)}
-        </span>
+        <Badge key="money" variant={getEffectVariant(effects.money)} className="gap-1">
+          <Coins className="w-3 h-3" />
+          {formatResourceChange(effects.money)}
+        </Badge>
       );
     }
 
     if (effects.reputation) {
       items.push(
-        <span key="reputation" className={`inline-flex items-center ${getEffectColor(effects.reputation)}`}>
-          ⭐ {formatResourceChange(effects.reputation)}%
-        </span>
+        <Badge key="reputation" variant={getEffectVariant(effects.reputation)} className="gap-1">
+          <Star className="w-3 h-3" />
+          {formatResourceChange(effects.reputation)}%
+        </Badge>
       );
     }
 
     if (effects.energy) {
       items.push(
-        <span key="energy" className={`inline-flex items-center ${getEffectColor(effects.energy)}`}>
-          ⚡ {formatResourceChange(effects.energy)}%
-        </span>
+        <Badge key="energy" variant={getEffectVariant(effects.energy)} className="gap-1">
+          <Zap className="w-3 h-3" />
+          {formatResourceChange(effects.energy)}%
+        </Badge>
       );
     }
 
     return items.length > 0 ? (
-      <div className="flex flex-wrap gap-2 text-sm">
+      <div className="flex flex-wrap gap-2 mt-3">
         {items}
       </div>
     ) : null;
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-      <div className="mb-4">
-        <h3 className="text-xl font-bold text-gray-800 mb-2">🎯 {scenario.title}</h3>
-        <p className="text-gray-600 leading-relaxed">{scenario.text}</p>
-      </div>
+    <Card className="w-full max-w-2xl mx-auto mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <Target className="w-5 h-5 text-orange-600" />
+          {scenario.title}
+        </CardTitle>
+      </CardHeader>
 
-      <div className="space-y-3">
-        <h4 className="font-semibold text-cyan-700">Your options:</h4>
-        {scenario.choices.map((choice, index) => (
-          <button
-            key={choice.id}
-            onClick={() => onChoice(choice)}
-            disabled={disabled}
-            className="w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:border-cyan-300 hover:bg-cyan-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <div className="font-medium text-gray-800 mb-2">
-              {index + 1}. {choice.label}
-            </div>
-            {renderEffects(choice.effects)}
-          </button>
-        ))}
-      </div>
-    </div>
+      <CardContent>
+        <p className="text-muted-foreground mb-6 leading-relaxed">{scenario.text}</p>
+
+        <div className="space-y-3">
+          <h4 className="font-semibold text-foreground">Your options:</h4>
+          {scenario.choices.map((choice, index) => (
+            <Button
+              key={choice.id}
+              variant="outline"
+              className="w-full justify-start h-auto p-4 text-left disabled:opacity-50"
+              onClick={() => onChoice(choice)}
+              disabled={disabled}
+            >
+              <div className="w-full">
+                <div className="font-medium mb-1">
+                  {index + 1}. {choice.label}
+                </div>
+                {renderEffects(choice.effects)}
+              </div>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
