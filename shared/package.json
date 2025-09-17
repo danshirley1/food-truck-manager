@@ -35,6 +35,11 @@
     "./utils": {
       "require": "./dist/utils/index.js",
       "types": "./dist/utils/index.d.ts"
+    },
+    "./browser": {
+      "require": "./dist/browser.js",
+      "import": "./dist/browser.js",
+      "types": "./dist/browser.d.ts"
     }
   }
 }
