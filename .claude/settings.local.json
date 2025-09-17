@@ -9,7 +9,8 @@
       "Bash(yarn dev:*)",
       "Bash(node:*)",
       "Bash(cp:*)",
-      "Bash(yarn start)"
+      "Bash(yarn start)",
+      "Bash(npm test)"
     ],
     "deny": [],
     "ask": []

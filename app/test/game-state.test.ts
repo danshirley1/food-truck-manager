@@ -2,8 +2,8 @@
  * Tests for game state management
  */
 
-import { GameStateManager } from '../src/engine/game-state';
-import { Choice, Scenario } from '../src/types';
+import { GameStateManager } from '@food-truck-manager/shared';
+import { Choice, Scenario } from '@food-truck-manager/shared';
 
 describe('GameStateManager', () => {
   test('creates new game state with correct initial values', () => {
