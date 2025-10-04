@@ -104,20 +104,26 @@ export function useGame() {
   const startNewGame = useCallback(() => {
     const newGameState = GameStateManager.createNew();
     setGameState(newGameState);
-    setCurrentScenario(null);
-    setIsLoading(false);
+    setIsLoading(true);
 
     // Load first scenario
-    setTimeout(() => {
-      const context = buildScenarioContext(newGameState);
-      const firstScenario = WebScenarioLoader.getScenario(context);
-      setCurrentScenario(firstScenario);
-    }, 100);
+    const context = buildScenarioContext(newGameState);
+    const firstScenario = WebScenarioLoader.getScenario(context);
+    setCurrentScenario(firstScenario);
+    setIsLoading(false);
   }, [buildScenarioContext]);
 
   const restartGame = useCallback(() => {
-    startNewGame();
-  }, [startNewGame]);
+    const newGameState = GameStateManager.createNew();
+    setGameState(newGameState);
+    setIsLoading(true);
+
+    // Load first scenario immediately without showing splash screen
+    const context = buildScenarioContext(newGameState);
+    const firstScenario = WebScenarioLoader.getScenario(context);
+    setCurrentScenario(firstScenario);
+    setIsLoading(false);
+  }, [buildScenarioContext]);
 
   return {
     gameState,
