@@ -1,40 +1,29 @@
 {
   "name": "food-truck-manager-workspace",
   "version": "1.0.0",
-  "description": "Food Truck Manager - Portfolio showcase with CLI and web versions",
+  "description": "Food Truck Manager - Portfolio showcase web application",
   "private": true,
   "scripts": {
-    "dev": "concurrently -k -n \"shared,web,info\" -c \"blue,green,yellow\" \"yarn dev:shared\" \"yarn dev:web\" \"yarn dev:info\"",
-    "dev:all": "concurrently -k -n \"shared,web\" -c \"blue,green\" \"yarn dev:shared\" \"yarn dev:web\"",
+    "dev": "concurrently -k -n \"shared,web\" -c \"blue,green\" \"yarn dev:shared\" \"yarn dev:web\"",
     "dev:shared": "cd shared && yarn dev",
     "dev:web": "cd web && yarn dev",
-    "dev:cli": "cd cli && yarn dev",
-    "dev:info": "echo '🚚 Food Truck Manager Development Environment' && echo '📱 Web: http://localhost:3000' && echo '💻 CLI: Run \"yarn dev:cli\" in a separate terminal' && echo '📦 Shared: Watching for changes...' && while true; do sleep 1; done",
-    "build": "yarn build:shared && yarn build:web && yarn build:cli",
+    "build": "yarn build:shared && yarn build:web",
     "build:shared": "cd shared && yarn build",
     "build:web": "cd web && yarn build",
-    "build:cli": "cd cli && yarn build",
-    "test": "cd cli && yarn test",
-    "test:watch": "cd cli && yarn test:watch",
-    "install:all": "yarn install:shared && yarn install:web && yarn install:cli",
+    "install:all": "yarn install:shared && yarn install:web",
     "install:shared": "cd shared && yarn install",
     "install:web": "cd web && yarn install",
-    "install:cli": "cd cli && yarn install",
-    "clean": "yarn clean:shared && yarn clean:web && yarn clean:cli",
+    "clean": "yarn clean:shared && yarn clean:web",
     "clean:shared": "cd shared && rm -rf node_modules dist yarn.lock",
     "clean:web": "cd web && rm -rf node_modules .next yarn.lock",
-    "clean:cli": "cd cli && rm -rf node_modules dist",
-    "start:web": "cd web && yarn start",
-    "lint": "yarn lint:web && yarn lint:cli",
-    "lint:web": "cd web && yarn lint",
-    "lint:cli": "echo 'No linting configured for CLI app'"
+    "start": "cd web && yarn start",
+    "lint": "cd web && yarn lint"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
   },
   "workspaces": {
     "packages": [
-      "cli",
       "web",
       "shared"
     ]
@@ -49,7 +38,6 @@
     "simulation",
     "typescript",
     "nextjs",
-    "cli",
     "portfolio"
   ],
   "author": "Food Truck Manager Team",

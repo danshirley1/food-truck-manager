@@ -4,8 +4,7 @@
 A portfolio showcase application featuring a Food Truck Manager simulation game. Players navigate scenarios like permits, supply chains, festival bookings, and customer interactions through decision-based gameplay.
 
 ## Development Approach
-- **Phase 1**: CLI-based prototype with simple decision trees
-- **Phase 2**: React frontend with AWS backend integration
+- **Web Application**: Next.js React frontend with AWS backend integration
 - **Focus**: System design and architecture over complex game theory
 - **AI Integration**: Generate scenario content and choices to minimize manual content creation
 
@@ -54,35 +53,30 @@ A portfolio showcase application featuring a Food Truck Manager simulation game.
 - Maintaining traceability of all design decisions
 - Ensuring all design evolution is documented in real-time
 
-### 2025-09-07 - Phase 1 Implementation Complete
-- **CLI Game Built**: Fully playable CLI version with interactive interface
-- **Core Components**: Game state management, scenario loading, input/display systems
-- **Testing**: Comprehensive test suite with 100% coverage of game logic
-- **Static Content**: 8 curated scenarios across all difficulty levels
-- **Project Structure**: Clean TypeScript architecture following design docs
-- **Build System**: Complete npm scripts for dev, build, test workflows
-- **Documentation**: README and inline documentation for maintainability
-
 ### 2025-09-15 - Next.js Web Application Complete
 - **Next.js 14 Setup**: Modern React application with TypeScript and Tailwind CSS
-- **Shared Architecture**: Extracted core game logic to shared module for code reuse
+- **Shared Architecture**: Core game logic in shared module for reusability
 - **React Components**: GameBoard, ScenarioCard, GameOverCard with responsive design
-- **Web-Compatible Engine**: Adapted CLI game logic for browser environment
 - **Game Hook**: useGame custom hook for React state management
-- **Full Playability**: Complete web version with all CLI game features
-- **Dual Development**: Both CLI and web versions working simultaneously
-- **Unified Package Management**: Converted entire project to use Yarn consistently
+- **Full Playability**: Complete web version with static scenario library
+- **Unified Package Management**: Yarn workspace setup
 - **Orchestrated Development**: Single `yarn dev` command starts all development servers
+- **Static Content**: 8 curated scenarios across all difficulty levels
+
+### 2025-10-04 - CLI Version Removed
+- **Web-Only Focus**: Removed CLI application to simplify architecture
+- **Streamlined Workspace**: Web and shared packages only
+- **Updated Scripts**: Cleaned up all CLI-related build and dev scripts
+- **Documentation Updated**: Design docs reflect web-only architecture
 
 ## Current Architecture
 ```
-/app (CLI version - Yarn)
-/web (Next.js web version - Yarn)
+/web (Next.js web application - Yarn)
 /shared (shared game logic - Yarn)
-/package.json (root orchestration - Yarn)
+/package.json (root workspace orchestration - Yarn)
 ```
 
-## Next Steps - Phase 2 (Enhanced Web Features)
+## Next Steps - Enhanced Web Features
 - Add AI scenario generation with OpenAI integration
 - Implement user accounts and game session persistence
 - Plan AWS Lambda backend with DynamoDB integration

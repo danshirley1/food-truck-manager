@@ -1,31 +1,19 @@
 # Food Truck Manager - High Level Architecture
 
 ## System Overview
-A two-phase portfolio application demonstrating full-stack development with AI integration:
+A portfolio application demonstrating full-stack web development with AI integration:
 
-**Phase 1**: CLI-based prototype for rapid iteration and core mechanics validation
-**Phase 2**: React frontend with AWS serverless backend
+**Web Application**: Next.js React frontend with AWS serverless backend
 
 ## Architecture Principles
 - **AI-First Content**: Minimize manual content creation, maximize AI-generated scenarios
 - **Simple Game Logic**: Focus on technical architecture over complex game mechanics
 - **Portfolio Showcase**: Demonstrate modern development practices and AWS integration
-- **Scalable Design**: Architecture should support growth from CLI to full web application
+- **Scalable Design**: Architecture should support growth and feature expansion
 
 ## High-Level Components
 
-### Phase 1: CLI Application
-```
-┌─────────────────┐    ┌──────────────┐    ┌─────────────┐
-│   CLI Client    │────│ Game Engine  │────│ AI Service  │
-│                 │    │              │    │ (OpenAI)    │
-│ - User Input    │    │ - Game State │    │             │
-│ - Display       │    │ - Rules      │    └─────────────┘
-│ - Validation    │    │ - Scoring    │
-└─────────────────┘    └──────────────┘
-```
-
-### Phase 2: Web Application
+### Web Application
 ```
 ┌─────────────┐    ┌──────────────┐    ┌─────────────────┐
 │ React SPA   │────│ API Gateway  │────│ Lambda Functions│
@@ -45,15 +33,6 @@ A two-phase portfolio application demonstrating full-stack development with AI i
 ```
 
 ## Technology Stack
-
-### Phase 1 (CLI)
-- **Runtime**: Node.js
-- **Language**: TypeScript
-- **AI Integration**: OpenAI API
-- **Validation**: Zod
-- **Testing**: Jest
-
-### Phase 2 (Web)
 - **Frontend**: React + TypeScript, Vite
 - **Backend**: AWS Lambda (Node.js 20)
 - **Database**: DynamoDB
