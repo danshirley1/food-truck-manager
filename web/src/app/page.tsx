@@ -22,13 +22,6 @@ export default function Home() {
     loadNextScenario
   } = useGame();
 
-  useEffect(() => {
-    // Load first scenario when component mounts
-    if (gameState.turn === 0 && !currentScenario && !isLoading) {
-      loadNextScenario();
-    }
-  }, [gameState.turn, currentScenario, isLoading, loadNextScenario]);
-
   const handleStartGame = () => {
     startNewGame();
   };
@@ -37,7 +30,8 @@ export default function Home() {
     makeChoice(choice);
   };
 
-  if (gameState.turn === 0 && !currentScenario) {
+  // Show splash screen if we haven't started the game yet
+  if (gameState.turn === 0 && !currentScenario && !isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
