@@ -17,35 +17,31 @@ nvm install
 ```bash
 yarn dev
 ```
-This will start:
-- 📦 **Shared module** watching for changes
-- 🌐 **Web app** at http://localhost:3000
+This will start the Next.js development server at http://localhost:3000
 
 ## 📁 Project Structure
 
 ```
-├── web/          # Next.js web application (TypeScript + React)
-├── shared/       # Common game logic (TypeScript)
-└── package.json  # Yarn workspace orchestration
+web/
+├── src/
+│   ├── app/          # Next.js app router pages
+│   ├── components/   # React components
+│   ├── hooks/        # Custom React hooks
+│   └── lib/          # Game logic and utilities
+│       ├── engine/   # Game state management
+│       ├── types/    # TypeScript types
+│       ├── scenarios/# Scenario loader
+│       └── game/     # Main game exports
+└── package.json
 ```
 
 ## 🛠️ Available Scripts
 
-### Development
-- `yarn dev` - Start web + shared development servers
-- `yarn dev:web` - Start web development server only
-- `yarn dev:shared` - Start shared module watcher only
-
-### Building
-- `yarn build` - Build all projects
-- `yarn build:web` - Build web version
-- `yarn build:shared` - Build shared module
-
-### Setup & Maintenance
-- `yarn install:all` - Install all dependencies
-- `yarn clean` - Clean all build artifacts and node_modules
-- `yarn lint` - Run linter on web application
-- `yarn start` - Start production web server
+- `yarn dev` - Start development server
+- `yarn build` - Build for production
+- `yarn start` - Start production server
+- `yarn lint` - Run linter
+- `yarn clean` - Clean build artifacts
 
 ## 🎮 How to Play
 
@@ -67,29 +63,23 @@ Manage your food truck for 15 days by balancing three resources:
 
 ## 🏗️ Architecture
 
-Modern full-stack web application with modular architecture:
+Single Next.js application with modular game logic:
 
 ```
-┌─────────────────┐
-│   Next.js Web   │
-│   Application   │
-│   (TypeScript)  │
-└────────┬────────┘
-         │
-         │ imports
-         │
-  ┌──────▼──────┐
-  │   Shared    │
-  │ Game Logic  │
-  │ TypeScript  │
-  └─────────────┘
+Next.js App (TypeScript + React)
+├── UI Layer (Components)
+├── Business Logic (Hooks)
+└── Game Engine (Lib)
+    ├── State Management
+    ├── Type Definitions
+    └── Scenario System
 ```
 
 **Tech Stack:**
 - Next.js 14 with App Router
 - React with TypeScript
-- Tailwind CSS for styling
-- Yarn workspaces for monorepo management
+- Tailwind CSS + shadcn/ui
+- Zod for validation
 
 ## 📚 Documentation
 

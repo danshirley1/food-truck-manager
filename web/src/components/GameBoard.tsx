@@ -1,6 +1,6 @@
 'use client';
 
-import { GameState } from '@/lib/shared';
+import { GameState } from '@/lib/game';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Coins, Star, Zap, Truck } from 'lucide-react';

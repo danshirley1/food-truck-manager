@@ -3,7 +3,7 @@
  */
 
 import { GameState, Resources, Choice, Scenario, EndReason, ChoiceRecord } from '../types';
-import { clamp, generateId } from '../utils/helpers';
+import { clamp, generateId } from '../game-utils/helpers';
 
 export class GameStateManager {
   

@@ -1,36 +1,13 @@
 {
-  "name": "food-truck-manager-workspace",
+  "name": "food-truck-manager",
   "version": "1.0.0",
   "description": "Food Truck Manager - Portfolio showcase web application",
   "private": true,
   "scripts": {
-    "dev": "concurrently -k -n \"shared,web\" -c \"blue,green\" \"yarn dev:shared\" \"yarn dev:web\"",
-    "dev:shared": "cd shared && yarn dev",
-    "dev:web": "cd web && yarn dev",
-    "build": "yarn build:shared && yarn build:web",
-    "build:shared": "cd shared && yarn build",
-    "build:web": "cd web && yarn build",
-    "install:all": "yarn install:shared && yarn install:web",
-    "install:shared": "cd shared && yarn install",
-    "install:web": "cd web && yarn install",
-    "clean": "yarn clean:shared && yarn clean:web",
-    "clean:shared": "cd shared && rm -rf node_modules dist yarn.lock",
-    "clean:web": "cd web && rm -rf node_modules .next yarn.lock",
+    "dev": "cd web && yarn dev",
+    "build": "cd web && yarn build",
     "start": "cd web && yarn start",
     "lint": "cd web && yarn lint"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  },
-  "workspaces": {
-    "packages": [
-      "web",
-      "shared"
-    ]
-  },
-  "engines": {
-    "node": ">=18.18.0",
-    "yarn": ">=1.22.0"
   },
   "keywords": [
     "food-truck",

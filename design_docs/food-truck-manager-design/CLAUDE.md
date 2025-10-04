@@ -69,11 +69,25 @@ A portfolio showcase application featuring a Food Truck Manager simulation game.
 - **Updated Scripts**: Cleaned up all CLI-related build and dev scripts
 - **Documentation Updated**: Design docs reflect web-only architecture
 
+### 2025-10-04 - Refactored to Standard Next.js Structure
+- **Removed Shared Package**: Moved all game logic into Next.js `/lib` directory
+- **Standard Next.js Pattern**: Following Next.js best practices with `/lib` for business logic
+- **Simplified Build**: No more workspace complexity, single Next.js app
+- **Cleaner Imports**: All imports now use `@/lib/game` pattern
+- **Updated Documentation**: Reflects new simpler architecture
+
 ## Current Architecture
 ```
-/web (Next.js web application - Yarn)
-/shared (shared game logic - Yarn)
-/package.json (root workspace orchestration - Yarn)
+/web (Single Next.js application)
+  /src
+    /app          # Next.js pages
+    /components   # React components
+    /hooks        # Custom hooks
+    /lib          # Game engine and logic
+      /engine     # State management
+      /types      # TypeScript definitions
+      /scenarios  # Scenario system
+      /game       # Main exports
 ```
 
 ## Next Steps - Enhanced Web Features

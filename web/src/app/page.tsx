@@ -6,7 +6,7 @@ import { ScenarioCard } from '@/components/ScenarioCard';
 import { GameOverCard } from '@/components/GameOverCard';
 import { LoadingCard } from '@/components/LoadingCard';
 import { useGame } from '@/hooks/useGame';
-import { Choice } from '@/lib/shared';
+import { Choice } from '@/lib/game';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Truck, Play } from 'lucide-react';
