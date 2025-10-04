@@ -57,7 +57,7 @@ export function GameOverCard({ gameState, onRestart }: GameOverCardProps) {
     }
   };
 
-  const { icon, title, message, variant, bgClass } = getEndReasonData();
+  const { icon, title, message, bgClass } = getEndReasonData();
 
   return (
     <Card className={`w-full max-w-md mx-auto ${bgClass}`}>

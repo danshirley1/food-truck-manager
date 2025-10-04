@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { GameBoard } from '@/components/GameBoard';
 import { ScenarioCard } from '@/components/ScenarioCard';
 import { GameOverCard } from '@/components/GameOverCard';
@@ -19,7 +18,6 @@ export default function Home() {
     makeChoice,
     startNewGame,
     restartGame,
-    loadNextScenario
   } = useGame();
 
   const handleStartGame = () => {
