@@ -76,23 +76,43 @@ A portfolio showcase application featuring a Food Truck Manager simulation game.
 - **Cleaner Imports**: All imports now use `@/lib/game` pattern
 - **Updated Documentation**: Reflects new simpler architecture
 
+### 2025-10-04 - Next.js Learning Phase: Server Components & API Routes
+- **Learning Objective**: Understand Next.js App Router, Server Components, and API Routes
+- **First Feature**: Move hardcoded scenarios to backend API endpoints
+- **Server-Side Data**: Learn data fetching patterns with Server Components
+- **API Design**: RESTful endpoints for game data
+- **Progressive Enhancement**: Keep client-side working, add server features incrementally
+
 ## Current Architecture
 ```
 /web (Single Next.js application)
   /src
-    /app          # Next.js pages
-    /components   # React components
-    /hooks        # Custom hooks
+    /app          # Next.js App Router pages & API routes
+    /components   # React components (Client & Server)
+    /hooks        # Custom React hooks
     /lib          # Game engine and logic
       /engine     # State management
       /types      # TypeScript definitions
-      /scenarios  # Scenario system
+      /scenarios  # Scenario system (moving to API)
       /game       # Main exports
 ```
 
-## Next Steps - Enhanced Web Features
-- Add AI scenario generation with OpenAI integration
-- Implement user accounts and game session persistence
-- Plan AWS Lambda backend with DynamoDB integration
-- Create deployment pipeline with CDK infrastructure as code
-- Add animations and enhanced UI/UX features
+## Current State: Fully Functional Web Game
+- ✅ Complete playable game with 8 static scenarios
+- ✅ Client-side game state management
+- ✅ Hardcoded scenarios in `web-scenario-loader.ts`
+- ✅ Responsive UI with Tailwind CSS
+- ✅ Game mechanics: 3 resources, 15 turns, difficulty progression
+
+## Next Steps - Learning Next.js Server Features
+1. **API Routes for Scenarios** (Current Focus)
+   - Create `/app/api/scenarios/route.ts` endpoint
+   - Move hardcoded scenario data to server
+   - Learn about Route Handlers in Next.js 14+
+   - Understand request/response patterns
+
+2. **Future Enhancements**
+   - Add AI scenario generation with OpenAI integration
+   - Implement user accounts and game session persistence
+   - Plan AWS Lambda backend with DynamoDB integration
+   - Create deployment pipeline with CDK infrastructure as code

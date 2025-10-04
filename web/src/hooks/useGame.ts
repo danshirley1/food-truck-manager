@@ -6,9 +6,9 @@ import {
   GameStateManager,
   Scenario,
   Choice,
-  ScenarioContext,
-  WebScenarioLoader
+  ScenarioContext
 } from '@/lib/game';
+import { ApiScenarioLoader } from '@/lib/scenarios/api-scenario-loader';
 
 export function useGame() {
   const [gameState, setGameState] = useState<GameState>(() =>
@@ -54,12 +54,13 @@ export function useGame() {
     };
   }, []);
 
-  const loadNextScenario = useCallback(() => {
+  const loadNextScenario = useCallback(async () => {
     setIsLoading(true);
 
     try {
       const context = buildScenarioContext(gameState);
-      const scenario = WebScenarioLoader.getScenario(context);
+      // API call is async - we await the result
+      const scenario = await ApiScenarioLoader.getScenario(context);
       setCurrentScenario(scenario);
     } catch (error) {
       console.error('Failed to load scenario:', error);
@@ -69,7 +70,7 @@ export function useGame() {
     }
   }, [gameState, buildScenarioContext]);
 
-  const makeChoice = useCallback((choice: Choice) => {
+  const makeChoice = useCallback(async (choice: Choice) => {
     if (!currentScenario) return;
 
     setIsLoading(true);
@@ -85,12 +86,14 @@ export function useGame() {
 
       // If game isn't over, load next scenario
       if (!newGameState.gameOver) {
-        setTimeout(() => {
+        // Small delay to show choice results
+        setTimeout(async () => {
           const context = buildScenarioContext(newGameState);
-          const nextScenario = WebScenarioLoader.getScenario(context);
+          // API call is async - we await the result
+          const nextScenario = await ApiScenarioLoader.getScenario(context);
           setCurrentScenario(nextScenario);
           setIsLoading(false);
-        }, 1000); // Small delay to show choice results
+        }, 1000);
       } else {
         setCurrentScenario(null);
         setIsLoading(false);
@@ -101,26 +104,28 @@ export function useGame() {
     }
   }, [gameState, currentScenario, buildScenarioContext]);
 
-  const startNewGame = useCallback(() => {
+  const startNewGame = useCallback(async () => {
     const newGameState = GameStateManager.createNew();
     setGameState(newGameState);
     setIsLoading(true);
 
     // Load first scenario
     const context = buildScenarioContext(newGameState);
-    const firstScenario = WebScenarioLoader.getScenario(context);
+    // API call is async - we await the result
+    const firstScenario = await ApiScenarioLoader.getScenario(context);
     setCurrentScenario(firstScenario);
     setIsLoading(false);
   }, [buildScenarioContext]);
 
-  const restartGame = useCallback(() => {
+  const restartGame = useCallback(async () => {
     const newGameState = GameStateManager.createNew();
     setGameState(newGameState);
     setIsLoading(true);
 
     // Load first scenario immediately without showing splash screen
     const context = buildScenarioContext(newGameState);
-    const firstScenario = WebScenarioLoader.getScenario(context);
+    // API call is async - we await the result
+    const firstScenario = await ApiScenarioLoader.getScenario(context);
     setCurrentScenario(firstScenario);
     setIsLoading(false);
   }, [buildScenarioContext]);

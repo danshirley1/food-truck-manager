@@ -1,11 +1,25 @@
 /**
- * Web-compatible scenario loader for Food Truck Manager
- * Uses inline JSON data instead of file system operations
+ * Next.js API Route Handler for Scenarios
+ *
+ * LEARNING NOTES:
+ * - This file creates the endpoint: /api/scenarios
+ * - Next.js automatically maps /app/api/scenarios/route.ts → /api/scenarios URL
+ * - The exported GET function handles HTTP GET requests
+ * - This code runs on the SERVER ONLY - never in the browser
+ * - Response.json() sends JSON back to the client
  */
 
-import { Scenario, DifficultyLevel, ScenarioContext } from '../types';
+import { Scenario } from '@/lib/game';
 
-// Static scenarios data (normally this would be imported from a JSON file or API)
+/**
+ * Static scenario data
+ * In the future, this could come from:
+ * - A database (PostgreSQL, MongoDB)
+ * - An AI service (OpenAI)
+ * - External API
+ *
+ * For now, we're moving it from the client bundle to the server
+ */
 const STATIC_SCENARIOS: Scenario[] = [
   {
     id: "customer-complaint-early-1",
@@ -31,7 +45,8 @@ const STATIC_SCENARIOS: Scenario[] = [
     ],
     tags: ["customer-service"],
     difficulty: "early",
-    createdBy: "static"
+    createdBy: "static",
+    createdAt: new Date('2024-01-01')
   },
   {
     id: "ingredient-shortage-early-2",
@@ -56,7 +71,8 @@ const STATIC_SCENARIOS: Scenario[] = [
     ],
     tags: ["supply-management"],
     difficulty: "early",
-    createdBy: "static"
+    createdBy: "static",
+    createdAt: new Date('2024-01-01')
   },
   {
     id: "permit-inspector-mid-1",
@@ -81,7 +97,8 @@ const STATIC_SCENARIOS: Scenario[] = [
     ],
     tags: ["permits"],
     difficulty: "mid",
-    createdBy: "static"
+    createdBy: "static",
+    createdAt: new Date('2024-01-01')
   },
   {
     id: "equipment-breakdown-mid-2",
@@ -106,7 +123,8 @@ const STATIC_SCENARIOS: Scenario[] = [
     ],
     tags: ["equipment"],
     difficulty: "mid",
-    createdBy: "static"
+    createdBy: "static",
+    createdAt: new Date('2024-01-01')
   },
   {
     id: "competitor-war-late-1",
@@ -131,7 +149,8 @@ const STATIC_SCENARIOS: Scenario[] = [
     ],
     tags: ["competition"],
     difficulty: "late",
-    createdBy: "static"
+    createdBy: "static",
+    createdAt: new Date('2024-01-01')
   },
   {
     id: "weather-crisis-late-2",
@@ -156,7 +175,8 @@ const STATIC_SCENARIOS: Scenario[] = [
     ],
     tags: ["weather"],
     difficulty: "late",
-    createdBy: "static"
+    createdBy: "static",
+    createdAt: new Date('2024-01-01')
   },
   {
     id: "social-media-crisis-mid-3",
@@ -181,7 +201,8 @@ const STATIC_SCENARIOS: Scenario[] = [
     ],
     tags: ["community-event"],
     difficulty: "mid",
-    createdBy: "static"
+    createdBy: "static",
+    createdAt: new Date('2024-01-01')
   },
   {
     id: "expansion-opportunity-late-3",
@@ -206,87 +227,63 @@ const STATIC_SCENARIOS: Scenario[] = [
     ],
     tags: ["expansion"],
     difficulty: "late",
-    createdBy: "static"
+    createdBy: "static",
+    createdAt: new Date('2024-01-01')
   }
 ];
 
-export class WebScenarioLoader {
-  private static scenarios = STATIC_SCENARIOS.map(scenario => ({
-    ...scenario,
-    createdAt: scenario.createdAt || new Date('2024-01-01')
-  }));
+/**
+ * GET /api/scenarios
+ *
+ * Handles HTTP GET requests to fetch scenarios
+ * This function runs on the server when a client makes a request
+ *
+ * Query Parameters:
+ * - difficulty: Filter by difficulty level ('early', 'mid', 'late')
+ *
+ * Examples:
+ * - /api/scenarios              → Returns all scenarios
+ * - /api/scenarios?difficulty=early → Returns only early scenarios
+ *
+ * @param request - The incoming HTTP request object
+ * @returns JSON response with scenarios
+ */
+export async function GET(request: Request) {
+  try {
+    // Parse the URL to extract query parameters
+    // Example: /api/scenarios?difficulty=early
+    const { searchParams } = new URL(request.url);
+    const difficulty = searchParams.get('difficulty');
 
-  /**
-   * Get a random scenario based on context (web version)
-   */
-  static getScenario(context: ScenarioContext): Scenario | null {
-    try {
-      console.log('WebScenarioLoader context:', context);
-      console.log('Total scenarios available:', this.scenarios.length);
+    console.log(`[API] GET /api/scenarios${difficulty ? `?difficulty=${difficulty}` : ''}`);
 
-      const availableScenarios = this.filterScenariosByContext(context);
-      console.log('Filtered scenarios:', availableScenarios.length);
+    // Start with all scenarios
+    let scenarios = STATIC_SCENARIOS;
 
-      if (availableScenarios.length === 0) {
-        console.warn('No scenarios available for context:', context);
-        // Debug: show what difficulties we have
-        const difficulties = this.scenarios.map(s => s.difficulty);
-        console.log('Available difficulties:', [...new Set(difficulties)]);
-        return null;
-      }
-
-      // Simple random selection
-      const randomIndex = Math.floor(Math.random() * availableScenarios.length);
-      return availableScenarios[randomIndex];
-    } catch (error) {
-      console.error('Error loading scenario:', error);
-      return null;
+    // Filter by difficulty if provided
+    if (difficulty) {
+      scenarios = scenarios.filter(s => s.difficulty === difficulty);
+      console.log(`[API] Filtered to ${scenarios.length} scenarios with difficulty: ${difficulty}`);
     }
-  }
 
-  /**
-   * Filter scenarios by context
-   */
-  private static filterScenariosByContext(context: ScenarioContext): Scenario[] {
-    const filtered = this.scenarios.filter(scenario => {
-      // Filter by difficulty level
-      if (scenario.difficulty !== context.difficultyLevel) {
-        return false;
+    return Response.json({
+      success: true,
+      count: scenarios.length,
+      scenarios: scenarios,
+      // Include metadata about the request
+      filters: {
+        difficulty: difficulty || 'all'
       }
-
-      return true;
     });
+  } catch (error) {
+    console.error('[API] Error fetching scenarios:', error);
 
-    // If we have scenarios for this difficulty, try to avoid recent repeats
-    // But if filtering would leave us with no scenarios, include all for this difficulty
-    if (context.recentChoices.length > 0) {
-      const nonRecentScenarios = filtered.filter(scenario => {
-        const hasRecentTag = scenario.tags.some(tag =>
-          context.recentChoices.includes(tag)
-        );
-        return !hasRecentTag;
-      });
-
-      // Only apply recent choice filtering if we still have scenarios left
-      if (nonRecentScenarios.length > 0) {
-        return nonRecentScenarios;
-      }
-    }
-
-    return filtered;
-  }
-
-  /**
-   * Get all scenarios (for debugging)
-   */
-  static getAllScenarios(): Scenario[] {
-    return [...this.scenarios];
-  }
-
-  /**
-   * Get scenarios by difficulty
-   */
-  static getScenariosByDifficulty(difficulty: DifficultyLevel): Scenario[] {
-    return this.scenarios.filter(s => s.difficulty === difficulty);
+    return Response.json(
+      {
+        success: false,
+        error: 'Failed to fetch scenarios'
+      },
+      { status: 500 }
+    );
   }
 }
