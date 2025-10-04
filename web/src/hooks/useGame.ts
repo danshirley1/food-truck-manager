@@ -6,9 +6,9 @@ import {
   GameStateManager,
   Scenario,
   Choice,
-  ScenarioContext
-} from '@/lib/shared';
-import { WebScenarioLoader } from '@/lib/shared/scenarios/web-scenario-loader';
+  ScenarioContext,
+  WebScenarioLoader
+} from '@/lib/game';
 
 export function useGame() {
   const [gameState, setGameState] = useState<GameState>(() =>

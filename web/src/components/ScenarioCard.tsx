@@ -1,6 +1,6 @@
 'use client';
 
-import { Scenario, Choice } from '@/lib/shared';
+import { Scenario, Choice } from '@/lib/game';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
