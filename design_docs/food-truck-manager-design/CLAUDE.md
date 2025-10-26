@@ -100,19 +100,171 @@ A portfolio showcase application featuring a Food Truck Manager simulation game.
 ## Current State: Fully Functional Web Game
 - ✅ Complete playable game with 8 static scenarios
 - ✅ Client-side game state management
-- ✅ Hardcoded scenarios in `web-scenario-loader.ts`
+- ✅ API Routes for scenarios (moved from hardcoded)
 - ✅ Responsive UI with Tailwind CSS
 - ✅ Game mechanics: 3 resources, 15 turns, difficulty progression
 
-## Next Steps - Learning Next.js Server Features
-1. **API Routes for Scenarios** (Current Focus)
-   - Create `/app/api/scenarios/route.ts` endpoint
-   - Move hardcoded scenario data to server
-   - Learn about Route Handlers in Next.js 14+
-   - Understand request/response patterns
+---
 
-2. **Future Enhancements**
-   - Add AI scenario generation with OpenAI integration
-   - Implement user accounts and game session persistence
-   - Plan AWS Lambda backend with DynamoDB integration
-   - Create deployment pipeline with CDK infrastructure as code
+## 🎯 Portfolio Enhancement Plan (2025-01-26)
+
+**NEW DIRECTION**: Transform into comprehensive full-stack portfolio piece demonstrating senior React/Next.js skills
+
+**Timeline**: 4-6 weeks (incremental feature branches)
+**Strategy**: Feature branches with digestible PRs for learning
+**Documentation**: See `PORTFOLIO_ENHANCEMENT_PLAN.md` and `INTERVIEW_TALKING_POINTS.md`
+
+### Key Changes from Original Plan
+- ❌ AWS Lambda + DynamoDB → ✅ Vercel + PostgreSQL (Supabase)
+- ❌ AI scenarios (future) → ✅ Focus on React patterns first
+- ❌ Single state approach → ✅ Multiple state management patterns (Context + Redux + React Query)
+- **Why**: Demonstrate breadth of React knowledge, easier deployment, better for portfolio interviews
+
+### Planned Phases (4-6 weeks)
+
+#### Phase 1: Authentication (Week 1)
+- **Tech**: NextAuth.js v5 + PostgreSQL + Prisma
+- **Features**: User registration, login, protected routes, user dashboard
+- **Learning**: NextAuth setup, Prisma migrations, Server Components
+- **Branch**: `feature/auth-system`
+
+#### Phase 2: Settings & Preferences (Week 1-2)
+- **Tech**: Context API + localStorage + database persistence
+- **Features**: Theme, audio, difficulty settings
+- **Learning**: Context patterns, TypeScript with Context, custom hooks
+- **Branch**: `feature/settings-context`
+
+#### Phase 3: Game Persistence (Week 2)
+- **Tech**: Server Actions + PostgreSQL
+- **Features**: Save/load game state, auto-save, multiple save slots
+- **Learning**: Server Actions, optimistic updates, serialization
+- **Branch**: `feature/game-persistence`
+
+#### Phase 4: Achievement System (Week 2-3)
+- **Tech**: React Portals + database
+- **Features**: Achievement definitions, unlock detection, toast notifications
+- **Learning**: Portals, notification queue, animation
+- **Branch**: `feature/achievements`
+
+#### Phase 5: Leaderboard (Week 3)
+- **Tech**: React Query (TanStack Query)
+- **Features**: Global leaderboard, filtering, pagination, score submission
+- **Learning**: React Query setup, caching, optimistic updates
+- **Branch**: `feature/leaderboard`
+
+#### Phase 6: Redux Time-Travel (Week 3-4)
+- **Tech**: Redux Toolkit + Redux DevTools
+- **Features**: Undo/redo, turn history, replay functionality
+- **Learning**: Redux setup, time-travel debugging, Redux patterns
+- **Branch**: `feature/redux-time-travel`
+
+#### Phase 7: Inventory System (Week 4)
+- **Tech**: useReducer + Redux (optional persistence)
+- **Features**: Ingredient/equipment inventory, add/remove/use items
+- **Learning**: useReducer patterns, discriminated unions, complex state logic
+- **Branch**: `feature/inventory-system`
+
+#### Phase 8: Tech Tree & Upgrades (Week 5)
+- **Tech**: Redux (for persistence)
+- **Features**: 5-8 upgrades with prerequisites, permanent buffs, visualization
+- **Learning**: Graph structures, dependency resolution, Redux integration
+- **Branch**: `feature/tech-tree`
+
+#### Phase 9: Polish & Documentation (Week 5-6)
+- **Tech**: Performance optimization, accessibility, documentation
+- **Features**: Code splitting, memoization, error boundaries, comprehensive docs
+- **Learning**: React DevTools Profiler, a11y, deployment
+- **Branch**: `feature/polish`
+
+### State Management Strategy
+
+**Critical Learning Objective**: Demonstrate understanding of when to use each tool
+
+| State Type | Tool | Why | Examples |
+|------------|------|-----|----------|
+| Global settings | Context API | Low-frequency updates, simple state | Theme, audio, preferences |
+| Complex game logic | Redux Toolkit | Time-travel, undo/redo, complex reducers | Game history, tech tree |
+| Server state | React Query | Caching, refetching, optimistic updates | Leaderboard, user profile |
+| Component state | useReducer | Complex logic, component-scoped | Inventory (within game) |
+| Simple UI state | useState | Transient, simple | Modal open/closed |
+
+### Tech Stack Updates
+
+**New Additions**:
+- **Auth**: NextAuth.js v5 (beta) - industry standard
+- **Database**: PostgreSQL (Supabase) + Prisma ORM
+- **State**: Redux Toolkit + React Query + Context API
+- **Deployment**: Vercel (zero-config)
+
+**Database Schema** (Prisma):
+- `users`, `accounts`, `sessions` (NextAuth)
+- `game_saves` (serialized game state)
+- `achievements`, `user_achievements` (M2M)
+- `leaderboard_entries` (scores with metadata)
+- `tech_tree_progress` (unlocked upgrades)
+- `user_settings` (preferences)
+
+### Learning Objectives
+
+**React Patterns**:
+- ✅ Context API (global settings)
+- ✅ Redux Toolkit (complex state, time-travel)
+- ✅ React Query (server state, caching)
+- ✅ useReducer (complex component logic)
+- ✅ React Portals (notifications, modals)
+- ✅ Custom Hooks (useGame, useSettings, useInventory)
+- ✅ useMemo/useCallback (performance)
+- ✅ React.memo (component optimization)
+
+**Next.js Patterns**:
+- ✅ Server Components (dashboard, leaderboard)
+- ✅ Server Actions (save game, unlock achievement)
+- ✅ API Routes (scenarios, leaderboard)
+- ✅ Middleware (auth checking)
+- ✅ Streaming & Suspense (future)
+
+**Full-Stack Skills**:
+- ✅ Authentication flows (NextAuth)
+- ✅ Database design (PostgreSQL + Prisma)
+- ✅ API design (RESTful + Server Actions)
+- ✅ Security (row-level, session management)
+- ✅ Performance (optimization, caching)
+- ✅ Deployment (Vercel + Supabase)
+
+### Interview Talking Points
+
+See `INTERVIEW_TALKING_POINTS.md` for comprehensive guide on:
+- Why multiple state management tools (not over-engineering)
+- Authentication architecture (NextAuth vs custom)
+- Database schema design (normalization, indexing)
+- Performance optimization (measured, targeted)
+- Security considerations (XSS, CSRF, validation)
+- Testing strategy (unit, integration, E2E)
+- Deployment & DevOps (Vercel, Supabase, migrations)
+
+### Documentation Standards
+
+Each phase includes:
+1. Design doc explaining architecture and decisions
+2. Learning notes (what worked, what didn't)
+3. Interview talking points (why this approach)
+4. Code examples with comments
+5. Updates to CLAUDE.md tracking progress
+
+**Files Created**:
+- `PORTFOLIO_ENHANCEMENT_PLAN.md` - Complete implementation roadmap
+- `INTERVIEW_TALKING_POINTS.md` - Curated answers for interviews
+- Per-phase docs in `architecture/`, `technical/`, `game-design/`
+
+---
+
+## Next Steps
+
+1. **Review Plan**: Read `PORTFOLIO_ENHANCEMENT_PLAN.md` thoroughly
+2. **Ask Questions**: Clarify anything unclear before starting
+3. **Begin Phase 1**: Authentication system (Week 1)
+4. **Document Progress**: Update CLAUDE.md after each phase
+5. **Iterate**: Learn, implement, document, repeat
+
+**Current Status**: Planning complete, ready to begin implementation
+**Next Action**: Start Phase 1 (Authentication) when ready
