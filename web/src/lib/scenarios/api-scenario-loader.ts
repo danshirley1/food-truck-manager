@@ -66,7 +66,7 @@ export class ApiScenarioLoader {
       // Convert createdAt strings back to Date objects
       const scenarios = data.scenarios.map(scenario => ({
         ...scenario,
-        createdAt: new Date(scenario.createdAt)
+        createdAt: scenario.createdAt ? new Date(scenario.createdAt) : undefined
       }));
 
       // Update cache
