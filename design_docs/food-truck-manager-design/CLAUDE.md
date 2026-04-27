@@ -258,6 +258,18 @@ Each phase includes:
 
 ---
 
+### 2026-04-27 - Heroku POC Demo Environment
+- **Decision**: Deploy the base game (`feature/heroku-deployment` branch) to a new Heroku app as an early demo environment
+- **Rationale**: Provides a shareable live URL before the full Vercel + Supabase setup is in place
+- **Branch deployed**: `feature/heroku-deployment` (no auth, no database — pure Next.js game)
+- **Files added**:
+  - `Procfile` (root): `web: npm start`
+  - `package.json` (root): `heroku-postbuild` script + `engines.node: 22.x`
+- **Heroku config vars required**: Only `NODE_ENV=production` (set automatically by Heroku)
+- **Long-term target**: Vercel + Supabase PostgreSQL — unchanged. Heroku is POC only.
+
+---
+
 ## Next Steps
 
 1. **Review Plan**: Read `PORTFOLIO_ENHANCEMENT_PLAN.md` thoroughly

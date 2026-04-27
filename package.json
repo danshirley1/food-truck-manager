@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "description": "Food Truck Manager - Portfolio showcase web application",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "cd web && yarn dev",
     "build": "cd web && yarn build",
     "start": "cd web && yarn start",
-    "lint": "cd web && yarn lint"
+    "lint": "cd web && yarn lint",
+    "heroku-postbuild": "cd web && yarn install && yarn build"
   },
   "keywords": [
     "food-truck",

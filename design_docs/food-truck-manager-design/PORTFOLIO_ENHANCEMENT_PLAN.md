@@ -9,6 +9,20 @@ Transform the Food Truck Manager from a simple turn-based game into a comprehens
 
 ---
 
+## Demo Environment (POC)
+
+An early POC demo environment is hosted on **Heroku** to provide a shareable live link before the full Vercel deployment is configured.
+
+- **Platform**: Heroku (new app, eco dyno)
+- **Branch**: `feature/heroku-deployment`
+- **Purpose**: Early demo / portfolio link — not the production deployment target
+- **Database**: None required on this branch (no auth, no persistence yet)
+- **Long-term target**: Vercel + Supabase PostgreSQL (as described in the rest of this plan — unchanged)
+
+The Heroku setup adds only two things to the repo: a `Procfile` and a `heroku-postbuild` script in the root `package.json`. These are compatible with the long-term Vercel deployment and don't affect the development workflow.
+
+---
+
 ## 🎯 Learning Objectives
 
 This enhancement plan is designed to demonstrate proficiency in:
