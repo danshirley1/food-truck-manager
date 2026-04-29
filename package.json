@@ -9,9 +9,9 @@
   "scripts": {
     "dev": "cd web && yarn dev",
     "build": "cd web && yarn build",
-    "start": "cd web && yarn start",
+    "start": "cd web && npm start",
     "lint": "cd web && yarn lint",
-    "heroku-postbuild": "cd web && yarn install && yarn build"
+    "heroku-postbuild": "cd web && npm install --include=dev && npm run build"
   },
   "keywords": [
     "food-truck",
