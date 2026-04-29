@@ -43,6 +43,22 @@ web/
 - `yarn lint` - Run linter
 - `yarn clean` - Clean build artifacts
 
+## 🚀 Deployment
+
+### Heroku (POC demo environment)
+
+Live URL: https://food-truck-manager-8397e84e2f8b.herokuapp.com/
+
+```bash
+npm run deploy:heroku
+```
+
+This pushes the `feature/heroku-deployment` branch to the `food-truck` Heroku remote. Requires the remote to be set up:
+
+```bash
+heroku git:remote -a food-truck-manager --remote food-truck
+```
+
 ## 🎮 How to Play
 
 1. Run `yarn dev`

@@ -11,7 +11,8 @@
     "build": "cd web && yarn build",
     "start": "cd web && npm start",
     "lint": "cd web && yarn lint",
-    "heroku-postbuild": "cd web && npm install --include=dev && npm run build"
+    "heroku-postbuild": "cd web && npm install --include=dev && npm run build",
+    "deploy:heroku": "git push food-truck feature/heroku-deployment:main --force"
   },
   "keywords": [
     "food-truck",
