@@ -42,11 +42,19 @@ export async function moderateScenarioContent(scenario: {
   title: string;
   text: string;
   choices: Array<{ label: string }>;
+  menuPrompt?: string;
+  menuOptions?: Array<{ label: string; verdictReason?: string }>;
+  dayContext?: { location: string; crowdDetail: string; crowdVibe: string };
 }): Promise<boolean> {
   const texts = [
     scenario.title,
     scenario.text,
+    scenario.dayContext?.location ?? '',
+    scenario.dayContext?.crowdDetail ?? '',
+    scenario.dayContext?.crowdVibe ?? '',
+    scenario.menuPrompt ?? '',
     ...scenario.choices.map((c) => c.label),
+    ...(scenario.menuOptions?.flatMap((m) => [m.label, m.verdictReason ?? '']) ?? []),
   ];
   return moderateTexts(texts);
 }

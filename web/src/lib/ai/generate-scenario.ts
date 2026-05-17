@@ -26,6 +26,9 @@ export async function generateScenario(context: ScenarioContext): Promise<Scenar
         title: processed.scenario.title,
         text: processed.scenario.text,
         choices: processed.scenario.choices,
+        menuPrompt: processed.scenario.menuPrompt,
+        menuOptions: processed.scenario.menuOptions,
+        dayContext: processed.scenario.dayContext,
       });
 
       if (!moderated) {

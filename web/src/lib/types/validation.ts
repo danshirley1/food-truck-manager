@@ -40,6 +40,28 @@ export const ScenarioTagSchema = z.enum([
   'expansion'
 ]);
 
+export const DayContextSchema = z.object({
+  location: z.string().min(5).max(120),
+  crowdDetail: z.string().min(30).max(400),
+  crowdVibe: z.string().min(10).max(120),
+});
+
+export const MenuOptionSchema = z.object({
+  id: z.string().regex(/^[a-z0-9-]+$/),
+  label: z.string().min(5).max(120),
+  effects: ResourceEffectsSchema,
+  verdictReason: z.string().min(15).max(200),
+});
+
+export const MenuFeedbackSchema = z.object({
+  turn: z.number().min(1).max(15),
+  menuLabel: z.string(),
+  stars: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  message: z.string(),
+  verdictReason: z.string(),
+  menuEffects: ResourceEffectsSchema,
+});
+
 export const ScenarioSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(3).max(80),
@@ -49,6 +71,9 @@ export const ScenarioSchema = z.object({
   difficulty: DifficultyLevelSchema,
   createdBy: z.enum(['ai', 'static']),
   createdAt: z.date().optional(),
+  dayContext: DayContextSchema,
+  menuPrompt: z.string().min(10).max(200),
+  menuOptions: z.array(MenuOptionSchema).length(3),
 });
 
 export const EndReasonSchema = z.enum(['victory', 'burnout', 'reputation-death', 'bankruptcy']);
@@ -71,6 +96,12 @@ export const ChoiceRecordSchema = z.object({
   resourcesBefore: ResourcesSchema,
   resourcesAfter: ResourcesSchema,
   timestamp: z.date(),
+  menuChoiceId: z.string().optional(),
+  menuStars: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+  businessEffects: ResourceEffectsSchema.optional(),
+  menuEffects: ResourceEffectsSchema.optional(),
+  dayLocation: z.string().optional(),
+  dayCrowdVibe: z.string().optional(),
 });
 
 export const GameStateSchema = z.object({
@@ -83,6 +114,8 @@ export const GameStateSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
   randomSeed: z.string().optional(),
+  chefsKudos: z.number().min(0),
+  lastMenuFeedback: MenuFeedbackSchema.optional(),
   choiceHistory: z.array(ChoiceRecordSchema),
   achievements: z.array(AchievementSchema),
 });
@@ -95,5 +128,8 @@ export const ScenarioContextSchema = z.object({
   availableTags: z.array(ScenarioTagSchema),
   randomSeed: z.string().optional(),
   recentScenarioIds: z.array(z.string()).optional(),
+  recentLocations: z.array(z.string()).optional(),
+  recentCrowdVibes: z.array(z.string()).optional(),
+  venueThemeHint: z.string().optional(),
   tone: z.enum(['light', 'standard']).optional(),
 });

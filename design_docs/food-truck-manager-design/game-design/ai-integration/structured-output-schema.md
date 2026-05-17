@@ -24,6 +24,16 @@
   "text": "A long line forms at your truck during lunch. You are running low on prep space and one grill is acting up.",
   "tags": ["customer-service", "equipment"],
   "difficulty": "early",
+  "dayContext": {
+    "location": "City centre office park, weekday lunch rush",
+    "crowdProfile": "Office workers with 30 minutes — want fast, portable meals"
+  },
+  "menuPrompt": "What special goes on the board for this crowd?",
+  "menuOptions": [
+    { "label": "Loaded burrito bowl special", "effects": { "money": 8, "reputation": 5, "energy": -4 } },
+    { "label": "Truffle risotto cup", "effects": { "money": -5, "reputation": -3, "energy": -6 } },
+    { "label": "Classic burger combo", "effects": { "money": 5, "reputation": 2, "energy": -5 } }
+  ],
   "choices": [
     {
       "label": "Offer samples while people wait to keep them happy",
@@ -74,7 +84,7 @@ The LLM does not set `id`, `createdBy`, or `createdAt`. The server assigns those
 |-------|------|
 | Zod | Per-field ±20 |
 | Normalizer | Difficulty caps (early ±10, mid ±15, late ±20); max impact 35 per choice |
-| `GameStateManager.applyChoice` | Max cumulative delta 30 per turn |
+| `GameStateManager.applyTurn` | Max cumulative delta 30 per turn (business + menu combined) |
 
 ## Environment
 

@@ -4,7 +4,7 @@ import { GameState } from '@/lib/game';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, XCircle, RotateCcw, Coins, Star, Zap } from 'lucide-react';
+import { Trophy, XCircle, RotateCcw, Coins, ThumbsUp, Zap } from 'lucide-react';
 
 interface GameOverCardProps {
   gameState: GameState;
@@ -60,7 +60,7 @@ export function GameOverCard({ gameState, onRestart }: GameOverCardProps) {
   const { icon, title, message, bgClass } = getEndReasonData();
 
   return (
-    <Card className={`w-full max-w-md mx-auto ${bgClass}`}>
+    <Card className={`w-full mb-6 ${bgClass}`}>
       <CardHeader className="text-center pb-4">
         <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-background flex items-center justify-center">
           {icon}
@@ -83,7 +83,7 @@ export function GameOverCard({ gameState, onRestart }: GameOverCardProps) {
           <div className="text-center">
             <div className="flex justify-center mb-2">
               <div className="p-2 rounded-full bg-yellow-100">
-                <Star className="w-4 h-4 text-yellow-600" />
+                <ThumbsUp className="w-4 h-4 text-violet-600" />
               </div>
             </div>
             <div className="text-xs text-muted-foreground mb-1">Reputation</div>

@@ -15,6 +15,7 @@ import {
   DIFFICULTY_MAX_EFFECT,
   MAX_IMPACT_PER_CHOICE,
 } from '../game-utils/effect-limits';
+import { menuOptionsHaveDistinctTiers } from '../game-utils/menu-scoring';
 import type { DifficultyLevel } from './core';
 
 const GeneratedEffectsSchema = z.object({
@@ -23,10 +24,22 @@ const GeneratedEffectsSchema = z.object({
   energy: z.number().min(-20).max(20),
 });
 
+export const GeneratedDayContextSchema = z.object({
+  location: z.string().min(5).max(120),
+  crowdDetail: z.string().min(30).max(400),
+  crowdVibe: z.string().min(10).max(120),
+});
+
 export const GeneratedChoiceSchema = z.object({
   label: z.string().min(5).max(120),
   effects: GeneratedEffectsSchema,
   riskLevel: RiskLevelSchema,
+});
+
+export const GeneratedMenuOptionSchema = z.object({
+  label: z.string().min(5).max(120),
+  effects: GeneratedEffectsSchema,
+  verdictReason: z.string().min(15).max(200),
 });
 
 export const GeneratedScenarioSchema = z.object({
@@ -34,10 +47,14 @@ export const GeneratedScenarioSchema = z.object({
   text: z.string().min(20).max(500),
   tags: z.array(ScenarioTagSchema).min(1).max(3),
   difficulty: DifficultyLevelSchema,
+  dayContext: GeneratedDayContextSchema,
+  menuPrompt: z.string().min(10).max(200),
   choices: z.array(GeneratedChoiceSchema).min(2).max(4),
+  menuOptions: z.array(GeneratedMenuOptionSchema).length(3),
 });
 
 export type GeneratedChoice = z.infer<typeof GeneratedChoiceSchema>;
+export type GeneratedMenuOption = z.infer<typeof GeneratedMenuOptionSchema>;
 export type GeneratedScenario = z.infer<typeof GeneratedScenarioSchema>;
 
 function slugify(text: string, index: number): string {
@@ -95,12 +112,18 @@ export function normalizeChoiceEffects(
   return normalized;
 }
 
-function choiceHasNegativeEffect(effects: GeneratedChoice['effects']): boolean {
+function choiceHasNegativeEffect(effects: {
+  money: number;
+  reputation: number;
+  energy: number;
+}): boolean {
   return effects.money < 0 || effects.reputation < 0 || effects.energy < 0;
 }
 
-function everyChoiceHasTradeoff(choices: GeneratedChoice[]): boolean {
-  return choices.every((choice) => choiceHasNegativeEffect(choice.effects));
+function everyOptionHasTradeoff(
+  options: Array<{ effects: { money: number; reputation: number; energy: number } }>
+): boolean {
+  return options.every((o) => choiceHasNegativeEffect(o.effects));
 }
 
 function hasReasonableChoice(
@@ -122,20 +145,29 @@ export function mapGeneratedToScenario(
   turn: number
 ): Scenario {
   const scenarioId = `ai-${turn}-${generateId()}`;
+  const difficulty = generated.difficulty;
 
   const scenario: Scenario = {
     id: scenarioId,
     title: generated.title,
     text: generated.text,
     tags: generated.tags,
-    difficulty: generated.difficulty,
+    difficulty,
     createdBy: 'ai',
     createdAt: new Date(),
+    dayContext: generated.dayContext,
+    menuPrompt: generated.menuPrompt,
     choices: generated.choices.map((choice, index) => ({
       id: slugify(choice.label, index + 1),
       label: choice.label,
-      effects: normalizeChoiceEffects(choice.effects, generated.difficulty),
+      effects: normalizeChoiceEffects(choice.effects, difficulty),
       riskLevel: choice.riskLevel,
+    })),
+    menuOptions: generated.menuOptions.map((option, index) => ({
+      id: slugify(option.label, index + 1),
+      label: option.label,
+      effects: normalizeChoiceEffects(option.effects, difficulty),
+      verdictReason: option.verdictReason,
     })),
   };
 
@@ -150,17 +182,34 @@ export function validateGeneratedScenario(
     return { success: false, error: parsed.error.message };
   }
 
-  if (!everyChoiceHasTradeoff(parsed.data.choices)) {
+  const { choices, menuOptions } = parsed.data;
+
+  if (!everyOptionHasTradeoff(choices)) {
     return {
       success: false,
-      error: 'Each choice must include at least one negative effect',
+      error: 'Each business choice must include at least one negative effect',
     };
   }
 
-  if (!hasReasonableChoice(parsed.data.choices, parsed.data.difficulty)) {
+  if (!everyOptionHasTradeoff(menuOptions)) {
     return {
       success: false,
-      error: 'All choices are excessively punitive',
+      error: 'Each menu option must include at least one negative effect',
+    };
+  }
+
+  if (!hasReasonableChoice(choices, parsed.data.difficulty)) {
+    return {
+      success: false,
+      error: 'All business choices are excessively punitive',
+    };
+  }
+
+  if (!menuOptionsHaveDistinctTiers(menuOptions, parsed.data.difficulty)) {
+    return {
+      success: false,
+      error:
+        'Menu options must form three distinct tiers (best / okay / bad fit) with clearly separated effects',
     };
   }
 

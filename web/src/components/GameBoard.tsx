@@ -3,14 +3,15 @@
 import { GameState } from '@/lib/game';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Coins, Star, Zap, Truck } from 'lucide-react';
+import { Coins, ThumbsUp, Zap, Truck } from 'lucide-react';
+import { ChefsKudosIcon } from '@/components/ChefsKudosIcon';
 
 interface GameBoardProps {
   gameState: GameState;
 }
 
 export function GameBoard({ gameState }: GameBoardProps) {
-  const { resources, turn } = gameState;
+  const { resources, turn, chefsKudos } = gameState;
 
   const getResourceVariant = (value: number, type: 'money' | 'reputation' | 'energy') => {
     if (type === 'money') {
@@ -24,7 +25,7 @@ export function GameBoard({ gameState }: GameBoardProps) {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto mb-6">
+    <Card className="w-full mb-6">
       <CardHeader>
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -41,7 +42,7 @@ export function GameBoard({ gameState }: GameBoardProps) {
       </CardHeader>
 
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Card className="border-2">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -64,8 +65,8 @@ export function GameBoard({ gameState }: GameBoardProps) {
           <Card className="border-2">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-yellow-100">
-                  <Star className="w-6 h-6 text-yellow-600" />
+                <div className="p-2 rounded-full bg-violet-100">
+                  <ThumbsUp className="w-6 h-6 text-violet-600" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-muted-foreground">Reputation</p>
@@ -92,6 +93,25 @@ export function GameBoard({ gameState }: GameBoardProps) {
                     <p className="text-2xl font-bold">{resources.energy}%</p>
                     <Badge variant={getResourceVariant(resources.energy, 'energy')}>
                       {resources.energy < 20 ? 'Tired' : resources.energy < 50 ? 'Okay' : 'Fresh'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2 border-amber-200">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <ChefsKudosIcon size="md" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Chef&apos;s Kudos
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-2xl font-bold">{chefsKudos}</p>
+                    <Badge variant="outline" className="text-amber-800 border-amber-300">
+                      stars
                     </Badge>
                   </div>
                 </div>

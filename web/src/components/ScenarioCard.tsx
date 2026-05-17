@@ -4,7 +4,7 @@ import { Scenario, Choice } from '@/lib/game';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Coins, Star, Zap, Target } from 'lucide-react';
+import { Coins, ThumbsUp, Zap, Target } from 'lucide-react';
 
 interface ScenarioCardProps {
   scenario: Scenario;
@@ -38,7 +38,7 @@ export function ScenarioCard({ scenario, onChoice, disabled }: ScenarioCardProps
     if (effects.reputation) {
       items.push(
         <Badge key="reputation" variant={getEffectVariant(effects.reputation)} className="gap-1">
-          <Star className="w-3 h-3" />
+          <ThumbsUp className="w-3 h-3" />
           {formatResourceChange(effects.reputation)}%
         </Badge>
       );

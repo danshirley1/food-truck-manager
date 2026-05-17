@@ -22,6 +22,29 @@ export interface Choice {
   riskLevel?: RiskLevel;   // Hint about uncertainty
 }
 
+export interface DayContext {
+  location: string;
+  crowdDetail: string;
+  crowdVibe: string;
+}
+
+export interface MenuOption {
+  id: string;
+  label: string;
+  effects: ResourceEffects;
+  /** One sentence shown after serve — why this special fit or flopped */
+  verdictReason: string;
+}
+
+export interface MenuFeedback {
+  turn: number;
+  menuLabel: string;
+  stars: 1 | 2 | 3;
+  message: string;
+  verdictReason: string;
+  menuEffects: ResourceEffects;
+}
+
 export interface Scenario {
   id: string;              // Unique identifier
   title: string;           // Short scenario title
@@ -31,6 +54,9 @@ export interface Scenario {
   difficulty: DifficultyLevel; // Appropriate turn range
   createdBy: 'ai' | 'static'; // Generation method
   createdAt?: Date;        // Generation timestamp
+  dayContext: DayContext;
+  menuPrompt: string;
+  menuOptions: MenuOption[];
 }
 
 export interface ChoiceRecord {
@@ -41,6 +67,12 @@ export interface ChoiceRecord {
   resourcesBefore: Resources;
   resourcesAfter: Resources;
   timestamp: Date;
+  menuChoiceId?: string;
+  menuStars?: 1 | 2 | 3;
+  businessEffects?: ResourceEffects;
+  menuEffects?: ResourceEffects;
+  dayLocation?: string;
+  dayCrowdVibe?: string;
 }
 
 export interface Achievement {
@@ -62,6 +94,9 @@ export interface GameState {
   updatedAt: Date;            // Last update time
   randomSeed?: string;        // For deterministic scenarios
   
+  chefsKudos: number;
+  lastMenuFeedback?: MenuFeedback;
+
   // Game history
   choiceHistory: ChoiceRecord[];
   achievements: Achievement[];
@@ -110,5 +145,8 @@ export interface ScenarioContext {
   availableTags: ScenarioTag[]; // Allowed scenario types
   randomSeed?: string;          // For deterministic generation
   recentScenarioIds?: string[]; // Avoid repeating AI scenarios
+  recentLocations?: string[];
+  recentCrowdVibes?: string[];
+  venueThemeHint?: string;
   tone?: 'light' | 'standard';
 }

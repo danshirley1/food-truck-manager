@@ -6,9 +6,11 @@ import {
   GameStateManager,
   Scenario,
   Choice,
+  MenuOption,
   ScenarioContext,
 } from '@/lib/game';
 import { ApiScenarioLoader } from '@/lib/scenarios/api-scenario-loader';
+import { getVenueThemeHint } from '@/lib/ai/prompts';
 
 export function useGame() {
   const [gameState, setGameState] = useState<GameState>(() =>
@@ -17,6 +19,15 @@ export function useGame() {
   const [currentScenario, setCurrentScenario] = useState<Scenario | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(
+    null
+  );
+  const [selectedMenuId, setSelectedMenuId] = useState<string | null>(null);
+
+  const clearTurnSelection = useCallback(() => {
+    setSelectedBusinessId(null);
+    setSelectedMenuId(null);
+  }, []);
 
   const buildScenarioContext = useCallback((state: GameState): ScenarioContext => {
     const difficulty = GameStateManager.getCurrentDifficulty(state.turn + 1);
@@ -41,16 +52,25 @@ export function useGame() {
       })
       .filter(Boolean) as string[];
 
-    const recentScenarioIds = state.choiceHistory
-      .slice(-5)
-      .map((record) => record.scenarioId);
+    const recentHistory = state.choiceHistory.slice(-5);
+    const recentScenarioIds = recentHistory.map((record) => record.scenarioId);
+    const recentLocations = recentHistory
+      .map((record) => record.dayLocation)
+      .filter((loc): loc is string => Boolean(loc));
+    const recentCrowdVibes = recentHistory
+      .map((record) => record.dayCrowdVibe)
+      .filter((vibe): vibe is string => Boolean(vibe));
+    const nextTurn = state.turn + 1;
 
     return {
       currentResources: state.resources,
-      turn: state.turn + 1,
+      turn: nextTurn,
       difficultyLevel: difficulty,
       recentChoices,
       recentScenarioIds,
+      recentLocations,
+      recentCrowdVibes,
+      venueThemeHint: getVenueThemeHint(nextTurn),
       availableTags: [
         'customer-service',
         'supply-management',
@@ -75,6 +95,7 @@ export function useGame() {
         const context = buildScenarioContext(state);
         const scenario = await ApiScenarioLoader.getScenario(context);
         setCurrentScenario(scenario);
+        clearTurnSelection();
         return scenario;
       } catch (error) {
         const message =
@@ -87,44 +108,62 @@ export function useGame() {
         setIsLoading(false);
       }
     },
-    [buildScenarioContext]
+    [buildScenarioContext, clearTurnSelection]
   );
 
-  const loadNextScenario = useCallback(async () => {
-    await fetchScenario(gameState);
-  }, [gameState, fetchScenario]);
+  const submitTurn = useCallback(async () => {
+    if (!currentScenario || !selectedBusinessId || !selectedMenuId) return;
 
-  const makeChoice = useCallback(
-    async (choice: Choice) => {
-      if (!currentScenario) return;
+    const businessChoice = currentScenario.choices.find(
+      (c) => c.id === selectedBusinessId
+    );
+    const menuOption = currentScenario.menuOptions.find(
+      (m) => m.id === selectedMenuId
+    );
+    if (!businessChoice || !menuOption) return;
 
-      setIsLoading(true);
-      setLoadError(null);
+    setIsLoading(true);
+    setLoadError(null);
 
-      try {
-        const newGameState = GameStateManager.applyChoice(
-          gameState,
-          currentScenario,
-          choice
-        );
+    try {
+      const newGameState = GameStateManager.applyTurn(
+        gameState,
+        currentScenario,
+        businessChoice,
+        menuOption
+      );
 
-        setGameState(newGameState);
+      setGameState(newGameState);
+      clearTurnSelection();
 
-        if (!newGameState.gameOver) {
-          setTimeout(() => {
-            void fetchScenario(newGameState);
-          }, 1000);
-        } else {
-          setCurrentScenario(null);
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Failed to apply choice:', error);
+      if (!newGameState.gameOver) {
+        setTimeout(() => {
+          void fetchScenario(newGameState);
+        }, 1000);
+      } else {
+        setCurrentScenario(null);
         setIsLoading(false);
       }
-    },
-    [gameState, currentScenario, fetchScenario]
-  );
+    } catch (error) {
+      console.error('Failed to submit turn:', error);
+      setIsLoading(false);
+    }
+  }, [
+    gameState,
+    currentScenario,
+    selectedBusinessId,
+    selectedMenuId,
+    fetchScenario,
+    clearTurnSelection,
+  ]);
+
+  const selectBusiness = useCallback((choice: Choice) => {
+    setSelectedBusinessId(choice.id);
+  }, []);
+
+  const selectMenu = useCallback((option: MenuOption) => {
+    setSelectedMenuId(option.id);
+  }, []);
 
   const startNewGame = useCallback(async () => {
     const newGameState = GameStateManager.createNew();
@@ -147,10 +186,13 @@ export function useGame() {
     currentScenario,
     isLoading,
     loadError,
-    makeChoice,
+    selectedBusinessId,
+    selectedMenuId,
+    selectBusiness,
+    selectMenu,
+    submitTurn,
     startNewGame,
     restartGame,
-    loadNextScenario,
     retryLoadScenario,
   };
 }

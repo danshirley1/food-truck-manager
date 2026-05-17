@@ -1,11 +1,11 @@
 'use client';
 
 import { GameBoard } from '@/components/GameBoard';
-import { ScenarioCard } from '@/components/ScenarioCard';
+import { TurnDecisionCard } from '@/components/TurnDecisionCard';
+import { MenuFeedbackBanner } from '@/components/MenuFeedbackBanner';
 import { GameOverCard } from '@/components/GameOverCard';
 import { LoadingCard } from '@/components/LoadingCard';
 import { useGame } from '@/hooks/useGame';
-import { Choice } from '@/lib/game';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Truck, Play, AlertCircle } from 'lucide-react';
@@ -15,22 +15,17 @@ export default function Home() {
     gameState,
     currentScenario,
     isLoading,
-    makeChoice,
+    loadError,
+    selectedBusinessId,
+    selectedMenuId,
+    selectBusiness,
+    selectMenu,
+    submitTurn,
     startNewGame,
     restartGame,
-    loadError,
     retryLoadScenario,
   } = useGame();
 
-  const handleStartGame = () => {
-    startNewGame();
-  };
-
-  const handleChoice = (choice: Choice) => {
-    makeChoice(choice);
-  };
-
-  // Show splash screen if we haven't started the game yet
   if (gameState.turn === 0 && !currentScenario && !isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 flex items-center justify-center p-4">
@@ -41,7 +36,8 @@ export default function Home() {
             </div>
             <CardTitle className="text-2xl">Food Truck Manager</CardTitle>
             <CardDescription className="text-base">
-              Manage your food truck through 15 days of business! Balance your money, reputation, and energy to succeed.
+              Manage your food truck through 15 days of business! Balance your money,
+              reputation, and energy to succeed.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -52,7 +48,7 @@ export default function Home() {
               </div>
             )}
             <Button
-              onClick={loadError ? retryLoadScenario : handleStartGame}
+              onClick={loadError ? retryLoadScenario : startNewGame}
               className="w-full"
               size="lg"
             >
@@ -67,27 +63,34 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-[1096px] mx-auto">
         <GameBoard gameState={gameState} />
 
         {gameState.gameOver && (
           <GameOverCard gameState={gameState} onRestart={restartGame} />
         )}
 
-        {!gameState.gameOver && currentScenario && (
-          <ScenarioCard
+        {!gameState.gameOver && gameState.lastMenuFeedback && !isLoading && (
+          <MenuFeedbackBanner feedback={gameState.lastMenuFeedback} />
+        )}
+
+        {!gameState.gameOver && currentScenario && !isLoading && (
+          <TurnDecisionCard
+            dayNumber={gameState.turn + 1}
             scenario={currentScenario}
-            onChoice={handleChoice}
+            selectedBusinessId={selectedBusinessId}
+            selectedMenuId={selectedMenuId}
+            onSelectBusiness={selectBusiness}
+            onSelectMenu={selectMenu}
+            onSubmit={submitTurn}
             disabled={isLoading}
           />
         )}
 
-        {isLoading && !gameState.gameOver && (
-          <LoadingCard />
-        )}
+        {isLoading && !gameState.gameOver && <LoadingCard />}
 
         {!gameState.gameOver && loadError && !isLoading && (
-          <Card className="w-full max-w-2xl mx-auto mb-6 border-destructive/50">
+          <Card className="w-full mb-6 border-destructive/50">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center gap-4 text-center">
                 <AlertCircle className="w-8 h-8 text-destructive" />
