@@ -8,11 +8,16 @@
 - **Flavor Text**: Immersive descriptions that maintain food truck theme
 - **Contextual Variations**: Different scenarios for similar game states
 
-### What AI Does NOT Control
-- **Resource Effects**: Numeric impacts are bounded and validated
-- **Game Rules**: Win/loss conditions, turn progression, scoring
+### What the Server Enforces (AI proposes, code decides)
+- **Resource Effects**: LLM proposes per-choice deltas; server validates with Zod, normalizes by difficulty, caps cumulative turn delta, then `GameStateManager` applies
+- **Game Rules**: Win/loss conditions, turn progression, scoring — never LLM-controlled
 - **Core Logic**: State management, validation, persistence
 - **Critical Paths**: Essential game flow decisions
+
+### Implementation (2026)
+- `POST /api/scenarios/generate` — OpenAI structured JSON (`gpt-4o-mini` default)
+- **AI-only**: `OPENAI_API_KEY` required in `web/.env` (no static scenario mode)
+- See [structured-output-schema.md](./structured-output-schema.md)
 
 ## AI Service Architecture
 

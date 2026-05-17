@@ -9,7 +9,7 @@ export function LoadingCard() {
       <CardContent className="flex items-center justify-center p-8">
         <div className="flex items-center gap-3">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-          <span className="text-muted-foreground">Loading next scenario...</span>
+          <span className="text-muted-foreground">Cooking up today&apos;s challenge...</span>
         </div>
       </CardContent>
     </Card>

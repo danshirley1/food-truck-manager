@@ -109,4 +109,6 @@ export interface ScenarioContext {
   recentChoices: string[];      // Last 3 scenario tags
   availableTags: ScenarioTag[]; // Allowed scenario types
   randomSeed?: string;          // For deterministic generation
+  recentScenarioIds?: string[]; // Avoid repeating AI scenarios
+  tone?: 'light' | 'standard';
 }

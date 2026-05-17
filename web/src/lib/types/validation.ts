@@ -94,4 +94,6 @@ export const ScenarioContextSchema = z.object({
   recentChoices: z.array(z.string()),
   availableTags: z.array(ScenarioTagSchema),
   randomSeed: z.string().optional(),
+  recentScenarioIds: z.array(z.string()).optional(),
+  tone: z.enum(['light', 'standard']).optional(),
 });

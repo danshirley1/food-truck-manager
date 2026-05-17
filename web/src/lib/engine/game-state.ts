@@ -2,8 +2,32 @@
  * Game state management for Food Truck Manager
  */
 
-import { GameState, Resources, Choice, Scenario, EndReason, ChoiceRecord } from '../types';
+import { GameState, Resources, Choice, Scenario, EndReason, ChoiceRecord, ResourceEffects } from '../types';
+import { MAX_CUMULATIVE_TURN_DELTA } from '../game-utils/effect-limits';
 import { clamp, generateId } from '../game-utils/helpers';
+
+function effectMagnitude(effects: ResourceEffects): number {
+  return (
+    Math.abs(effects.money ?? 0) +
+    Math.abs(effects.reputation ?? 0) +
+    Math.abs(effects.energy ?? 0)
+  );
+}
+
+function capTurnEffects(effects: ResourceEffects): ResourceEffects {
+  const magnitude = effectMagnitude(effects);
+  if (magnitude <= MAX_CUMULATIVE_TURN_DELTA) {
+    return effects;
+  }
+  const factor = MAX_CUMULATIVE_TURN_DELTA / magnitude;
+  const scale = (n: number | undefined) =>
+    n === undefined ? undefined : Math.round(n * factor);
+  return {
+    money: scale(effects.money),
+    reputation: scale(effects.reputation),
+    energy: scale(effects.energy),
+  };
+}
 
 export class GameStateManager {
   
@@ -39,32 +63,31 @@ export class GameStateManager {
     choice: Choice
   ): GameState {
     const resourcesBefore = { ...gameState.resources };
-    
-    // Apply resource effects with bounds checking
+    const effects = capTurnEffects(choice.effects);
+
     const newResources: Resources = {
       money: clamp(
-        resourcesBefore.money + (choice.effects.money || 0), 
+        resourcesBefore.money + (effects.money || 0), 
         -999, 
         999
       ),
       reputation: clamp(
-        resourcesBefore.reputation + (choice.effects.reputation || 0), 
+        resourcesBefore.reputation + (effects.reputation || 0), 
         0, 
         100
       ),
       energy: clamp(
-        resourcesBefore.energy + (choice.effects.energy || 0), 
+        resourcesBefore.energy + (effects.energy || 0), 
         0, 
         100
       )
     };
 
-    // Create choice record
     const choiceRecord: ChoiceRecord = {
       turn: gameState.turn + 1,
       scenarioId: scenario.id,
       choiceId: choice.id,
-      effects: choice.effects,
+      effects,
       resourcesBefore,
       resourcesAfter: newResources,
       timestamp: new Date()

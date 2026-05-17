@@ -8,7 +8,7 @@ import { useGame } from '@/hooks/useGame';
 import { Choice } from '@/lib/game';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Truck, Play } from 'lucide-react';
+import { Truck, Play, AlertCircle } from 'lucide-react';
 
 export default function Home() {
   const {
@@ -18,6 +18,8 @@ export default function Home() {
     makeChoice,
     startNewGame,
     restartGame,
+    loadError,
+    retryLoadScenario,
   } = useGame();
 
   const handleStartGame = () => {
@@ -42,10 +44,20 @@ export default function Home() {
               Manage your food truck through 15 days of business! Balance your money, reputation, and energy to succeed.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button onClick={handleStartGame} className="w-full" size="lg">
+          <CardContent className="space-y-4">
+            {loadError && (
+              <div className="flex flex-col items-center gap-2 text-center text-sm">
+                <AlertCircle className="w-5 h-5 text-destructive" />
+                <p className="text-muted-foreground">{loadError}</p>
+              </div>
+            )}
+            <Button
+              onClick={loadError ? retryLoadScenario : handleStartGame}
+              className="w-full"
+              size="lg"
+            >
               <Play className="w-4 h-4 mr-2" />
-              Start Your Food Truck Adventure
+              {loadError ? 'Try again' : 'Start Your Food Truck Adventure'}
             </Button>
           </CardContent>
         </Card>
@@ -72,6 +84,20 @@ export default function Home() {
 
         {isLoading && !gameState.gameOver && (
           <LoadingCard />
+        )}
+
+        {!gameState.gameOver && loadError && !isLoading && (
+          <Card className="w-full max-w-2xl mx-auto mb-6 border-destructive/50">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center gap-4 text-center">
+                <AlertCircle className="w-8 h-8 text-destructive" />
+                <p className="text-sm text-muted-foreground">{loadError}</p>
+                <Button onClick={retryLoadScenario} variant="outline">
+                  Try again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
