@@ -19,12 +19,18 @@ A portfolio showcase application featuring a Food Truck Manager simulation game.
 
 ### 2025-09-07 - Core Game Design
 - **Resource System**: 3 resources (money: -999 to 999, reputation: 0-100, energy: 0-100)
-- **Game Length**: 15 turns representing 15 days of operation
-- **Effect Constraints**: Individual effects limited to ±20, turn totals to ±30
-- **Failure States**: Burnout (energy ≤ 0), reputation death (reputation ≤ 0), bankruptcy (money ≤ -500)
-- **Victory Condition**: Complete all 15 turns successfully
+- **Game Length**: ~~15~~ → **5 turns** (2026-05; `TOTAL_TURNS` in `web/src/lib/types/core.ts`)
+- **Effect Constraints**: Individual effects limited to ±20, turn totals capped in `applyTurn`
+- **Failure States**: Burnout (energy ≤ 0), reputation death (reputation ≤ 0), bankruptcy (money ≤ 0)
+- **Victory Condition**: Complete all `TOTAL_TURNS` days successfully
 - **Data Model**: TypeScript-first with Zod validation for AI safety
-- **Difficulty Progression**: Early (1-5), Mid (6-10), Late (11-15) turns with escalating stakes
+- **Difficulty Progression**: Thirds of run (early / mid / late), computed from `TOTAL_TURNS`
+
+### 2026-05-17 - AI daily turn + menu images (web)
+- **Two-step turn**: Business choice + menu special (A/B/C); effects on menu hidden until verdict
+- **AI-only scenarios**: `POST /api/scenarios/generate`; mixed-effect validation; no risk badges in UI
+- **Menu images**: Async `POST /api/scenarios/menu-image`; default model `gpt-image-1-mini`; verdict refetch if submit early
+- **Docs**: `docs/ai-generated/CURRENT_IMPLEMENTATION.md`, `MENU_IMAGES.md`
 
 ### 2025-09-07 - AI Integration & Content Strategy
 - **AI Role**: Generate scenario narratives and choice labels, not game logic or effects
@@ -102,7 +108,7 @@ A portfolio showcase application featuring a Food Truck Manager simulation game.
 - ✅ Client-side game state management
 - ✅ API Routes for scenarios (moved from hardcoded)
 - ✅ Responsive UI with Tailwind CSS
-- ✅ Game mechanics: 3 resources, 15 turns, difficulty progression
+- ✅ Game mechanics: 3 resources, 5 turns, AI scenarios, menu images, Chef's Kudos verdict
 
 ---
 

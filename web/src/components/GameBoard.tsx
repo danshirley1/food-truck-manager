@@ -1,6 +1,6 @@
 'use client';
 
-import { GameState } from '@/lib/game';
+import { GameState, TOTAL_TURNS, displayDay } from '@/lib/game';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Coins, ThumbsUp, Zap, Truck } from 'lucide-react';
@@ -36,7 +36,7 @@ export function GameBoard({ gameState }: GameBoardProps) {
             </div>
           </div>
           <Badge variant="outline" className="text-lg px-4 py-2">
-            Day {turn}/15
+            Day {displayDay(turn)}/{TOTAL_TURNS}
           </Badge>
         </div>
       </CardHeader>

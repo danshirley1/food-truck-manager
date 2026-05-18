@@ -79,7 +79,7 @@ Current game state:
 - Money: ${context.currentResources.money}
 - Reputation: ${context.currentResources.reputation}  
 - Energy: ${context.currentResources.energy}
-- Turn: ${context.turn}/15
+- Turn: ${context.turn}/${TOTAL_TURNS} (see `web/src/lib/ai/prompts.ts`; `TOTAL_TURNS` = 5)
 - Difficulty: ${context.difficultyLevel}
 
 Recent scenario types: ${context.recentChoices.join(', ')}

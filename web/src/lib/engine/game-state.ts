@@ -11,6 +11,10 @@ import {
   EndReason,
   ChoiceRecord,
   ResourceEffects,
+  TOTAL_TURNS,
+  EARLY_TURN_END,
+  MID_TURN_END,
+  displayDay,
 } from '../types';
 import { MAX_CUMULATIVE_TURN_DELTA } from '../game-utils/effect-limits';
 import { normalizeChoiceEffects } from '../types/ai-schemas';
@@ -52,12 +56,17 @@ function mergeEffects(a: ResourceEffects, b: ResourceEffects): ResourceEffects {
 }
 
 export class GameStateManager {
-  static createNew(sessionId?: string, randomSeed?: string): GameState {
+  /** @param startingTurn 0 for pre-start lobby; 1 when a run begins */
+  static createNew(
+    sessionId?: string,
+    randomSeed?: string,
+    startingTurn: 0 | 1 = 1
+  ): GameState {
     const now = new Date();
 
     return {
       sessionId: sessionId || generateId(),
-      turn: 0,
+      turn: startingTurn,
       resources: {
         money: 100,
         reputation: 50,
@@ -90,7 +99,7 @@ export class GameStateManager {
     const merged = capTurnEffects(mergeEffects(businessEffects, menuEffects));
 
     const menuStars = rankMenuStars(scenario.menuOptions, menuOption.id);
-    const completedTurn = gameState.turn + 1;
+    const completedTurn = gameState.turn;
 
     const newResources: Resources = {
       money: clamp(resourcesBefore.money + (merged.money || 0), -999, 999),
@@ -127,7 +136,7 @@ export class GameStateManager {
 
     return {
       ...gameState,
-      turn: completedTurn,
+      turn: endCondition.gameOver ? completedTurn : gameState.turn + 1,
       resources: newResources,
       gameOver: endCondition.gameOver,
       endReason: endCondition.endReason,
@@ -140,6 +149,9 @@ export class GameStateManager {
         message: menuFeedbackMessage(menuStars),
         verdictReason: menuOption.verdictReason,
         menuEffects,
+        menuImageUrl: menuOption.imageUrl,
+        imagePrompt: menuOption.imagePrompt,
+        dayLocation: scenario.dayContext.location,
       },
       updatedAt: new Date(),
       choiceHistory: [...gameState.choiceHistory, choiceRecord],
@@ -175,7 +187,7 @@ export class GameStateManager {
       return { gameOver: true, endReason: 'bankruptcy' };
     }
 
-    if (turn >= 15) {
+    if (turn >= TOTAL_TURNS) {
       return { gameOver: true, endReason: 'victory' };
     }
 
@@ -211,8 +223,8 @@ export class GameStateManager {
   }
 
   static getCurrentDifficulty(turn: number): 'early' | 'mid' | 'late' {
-    if (turn <= 5) return 'early';
-    if (turn <= 10) return 'mid';
+    if (turn <= EARLY_TURN_END) return 'early';
+    if (turn <= MID_TURN_END) return 'mid';
     return 'late';
   }
 
@@ -221,8 +233,7 @@ export class GameStateManager {
 
     if (gameOver) {
       const messages = {
-        victory:
-          '🎉 Victory! You successfully managed your food truck for 15 days!',
+        victory: `🎉 Victory! You successfully managed your food truck for ${TOTAL_TURNS} days!`,
         burnout: '😴 Game Over - You burned out from exhaustion.',
         'reputation-death':
           '💔 Game Over - Your reputation was completely ruined.',
@@ -234,7 +245,7 @@ export class GameStateManager {
       return `${message}\nFinal Score: ${score}`;
     }
 
-    return `Turn ${turn}/15 - Money: $${resources.money} | Reputation: ${resources.reputation}% | Energy: ${resources.energy}%`;
+    return `Turn ${displayDay(turn)}/${TOTAL_TURNS} - Money: $${resources.money} | Reputation: ${resources.reputation}% | Energy: ${resources.energy}%`;
   }
 
   static isValidChoice(scenario: Scenario, choiceId: string): boolean {

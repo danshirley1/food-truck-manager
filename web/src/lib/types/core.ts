@@ -3,6 +3,21 @@
  * Based on design documentation at design_docs/food-truck-manager-design/
  */
 
+/** Number of playable days before victory */
+export const TOTAL_TURNS = 5;
+
+/** Last turn in the early difficulty band (inclusive) */
+export const EARLY_TURN_END = Math.ceil(TOTAL_TURNS / 3);
+
+/** Last turn in the mid difficulty band (inclusive) */
+export const MID_TURN_END = Math.ceil((TOTAL_TURNS * 2) / 3);
+
+/** Day number shown in the UI (1-based, capped at TOTAL_TURNS) */
+export function displayDay(turn: number): number {
+  if (turn <= 0) return 1;
+  return Math.min(turn, TOTAL_TURNS);
+}
+
 export interface Resources {
   money: number;        // -999 to 999
   reputation: number;   // 0 to 100  
@@ -31,9 +46,14 @@ export interface DayContext {
 export interface MenuOption {
   id: string;
   label: string;
+  /** Short appetizing blurb shown on the menu card (no stats or spoilers) */
+  description: string;
+  /** Used server-side / client fetch for image generation; not shown in UI */
+  imagePrompt?: string;
   effects: ResourceEffects;
   /** One sentence shown after serve — why this special fit or flopped */
   verdictReason: string;
+  imageUrl?: string;
 }
 
 export interface MenuFeedback {
@@ -43,6 +63,10 @@ export interface MenuFeedback {
   message: string;
   verdictReason: string;
   menuEffects: ResourceEffects;
+  menuImageUrl?: string;
+  /** Used to generate verdict image if the player submitted before the card loaded */
+  imagePrompt?: string;
+  dayLocation?: string;
 }
 
 export interface Scenario {
@@ -85,7 +109,7 @@ export interface Achievement {
 
 export interface GameState {
   sessionId: string;           // Unique session identifier
-  turn: number;                // Current turn (1-15)
+  turn: number;                // 0 = pre-start lobby; 1–TOTAL_TURNS = current day in play
   resources: Resources;        // Current resource levels
   gameOver: boolean;          // True if game ended
   endReason?: EndReason;      // Why game ended (if gameOver)
@@ -104,7 +128,7 @@ export interface GameState {
 
 // Enumerations
 export type EndReason = 
-  | 'victory'          // Completed all 15 turns
+  | 'victory'          // Completed all TOTAL_TURNS
   | 'burnout'         // Energy reached 0
   | 'reputation-death' // Reputation reached 0  
   | 'bankruptcy';     // Money dropped below -500
@@ -115,9 +139,9 @@ export type RiskLevel =
   | 'risky';          // Large variance possible
 
 export type DifficultyLevel = 
-  | 'early'           // Turns 1-5
-  | 'mid'             // Turns 6-10
-  | 'late';           // Turns 11-15
+  | 'early'           // First third of the run
+  | 'mid'             // Middle third
+  | 'late';           // Final third
 
 export type ScenarioTag = 
   | 'customer-service'

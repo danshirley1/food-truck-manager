@@ -24,7 +24,7 @@ export function assertOpenAiConfigured(): void {
 
 export async function generateScenarioFromLlm(
   context: ScenarioContext,
-  options: { strict?: boolean } = {}
+  options: { strict?: boolean; validationError?: string } = {}
 ): Promise<GenerateScenarioResult> {
   assertOpenAiConfigured();
 
@@ -42,7 +42,13 @@ export async function generateScenarioFromLlm(
       temperature: options.strict ? 0.5 : 0.8,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: buildUserPrompt(context, options.strict) },
+        {
+          role: 'user',
+          content: buildUserPrompt(context, {
+            strict: options.strict,
+            validationError: options.validationError,
+          }),
+        },
       ],
       response_format: {
         type: 'json_schema',

@@ -12,7 +12,7 @@ Start Game → Generate Scenario → Present Choices → Apply Effects → Check
 ## Victory Conditions
 
 ### Primary Win Condition
-**Survive 15 Turns**: Successfully navigate 15 days of food truck operation without hitting any failure states.
+**Survive 5 Turns**: Successfully navigate 5 days of food truck operation without hitting any failure states. (`TOTAL_TURNS` in `web/src/lib/types/core.ts`.)
 
 ### Bonus Achievements
 - **Balanced Manager**: Never let any resource drop below 30
@@ -25,7 +25,7 @@ Start Game → Generate Scenario → Present Choices → Apply Effects → Check
 ### Immediate Game Over
 1. **Burnout**: Energy drops to 0 or below
 2. **Reputation Death**: Reputation drops to 0 or below  
-3. **Bankruptcy**: Money drops to -500 or below
+3. **Bankruptcy**: Money drops to 0 or below
 
 ### Failure Messaging
 Each failure state has specific narrative endings:
@@ -39,7 +39,8 @@ Each failure state has specific narrative endings:
 Each scenario presents 2-4 options with:
 - **Description**: Clear narrative of the action
 - **Visible Effects**: Preview of resource changes (e.g., "Money: -10, Reputation: +15")
-- **Risk Level**: Some choices have uncertain outcomes
+- **Effect badges**: Money, reputation, and energy deltas (each option must mix positive and negative effects)
+- **Risk level**: Stored in AI output for schema only; not shown to the player
 
 ### Effect Application
 ```typescript
@@ -64,20 +65,22 @@ function applyChoice(gameState: GameState, choice: Choice): GameState {
 
 ## Difficulty Progression
 
-### Early Game (Turns 1-5)
-- **Stakes**: Low-impact decisions (-5 to +10 effects)
+### Early Game (Days 1–2)
+- **Stakes**: Lower caps (early ±10 per field)
 - **Scenarios**: Basic operations, simple customer interactions
-- **Focus**: Learning the ropes, establishing routine
+- **Focus**: Learning the ropes
 
-### Mid Game (Turns 6-10)
-- **Stakes**: Medium-impact decisions (-10 to +15 effects)
-- **Scenarios**: Equipment issues, permit renewals, competition
-- **Focus**: Optimization and crisis management
+### Mid Game (Days 3–4)
+- **Stakes**: Mid caps (±15 per field)
+- **Scenarios**: Equipment, permits, competition
+- **Focus**: Tradeoffs and crisis management
 
-### Late Game (Turns 11-15)
-- **Stakes**: High-impact decisions (-15 to +20 effects)
-- **Scenarios**: Major events, expansion opportunities, critical choices
-- **Focus**: Strategic thinking under pressure
+### Late Game (Day 5)
+- **Stakes**: Late caps (±20 per field)
+- **Scenarios**: High-stakes events, make-or-break choices
+- **Focus**: Closing out the run
+
+Bands are computed from `TOTAL_TURNS` in code (`EARLY_TURN_END`, `MID_TURN_END`).
 
 ## Scenario Categories
 

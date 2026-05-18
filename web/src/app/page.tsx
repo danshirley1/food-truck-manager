@@ -6,6 +6,7 @@ import { MenuFeedbackBanner } from '@/components/MenuFeedbackBanner';
 import { GameOverCard } from '@/components/GameOverCard';
 import { LoadingCard } from '@/components/LoadingCard';
 import { useGame } from '@/hooks/useGame';
+import { TOTAL_TURNS } from '@/lib/game';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Truck, Play, AlertCircle } from 'lucide-react';
@@ -20,10 +21,12 @@ export default function Home() {
     selectedMenuId,
     selectBusiness,
     selectMenu,
+    isMenuImageLoading,
     submitTurn,
     startNewGame,
     restartGame,
     retryLoadScenario,
+    onVerdictImageLoaded,
   } = useGame();
 
   if (gameState.turn === 0 && !currentScenario && !isLoading) {
@@ -36,7 +39,7 @@ export default function Home() {
             </div>
             <CardTitle className="text-2xl">Food Truck Manager</CardTitle>
             <CardDescription className="text-base">
-              Manage your food truck through 15 days of business! Balance your money,
+              Manage your food truck through {TOTAL_TURNS} days of business! Balance your money,
               reputation, and energy to succeed.
             </CardDescription>
           </CardHeader>
@@ -70,13 +73,16 @@ export default function Home() {
           <GameOverCard gameState={gameState} onRestart={restartGame} />
         )}
 
-        {!gameState.gameOver && gameState.lastMenuFeedback && !isLoading && (
-          <MenuFeedbackBanner feedback={gameState.lastMenuFeedback} />
+        {!gameState.gameOver && gameState.lastMenuFeedback && (
+          <MenuFeedbackBanner
+            feedback={gameState.lastMenuFeedback}
+            onImageLoaded={onVerdictImageLoaded}
+          />
         )}
 
         {!gameState.gameOver && currentScenario && !isLoading && (
           <TurnDecisionCard
-            dayNumber={gameState.turn + 1}
+            dayNumber={gameState.turn}
             scenario={currentScenario}
             selectedBusinessId={selectedBusinessId}
             selectedMenuId={selectedMenuId}
@@ -84,6 +90,7 @@ export default function Home() {
             onSelectMenu={selectMenu}
             onSubmit={submitTurn}
             disabled={isLoading}
+            isMenuImageLoading={isMenuImageLoading}
           />
         )}
 

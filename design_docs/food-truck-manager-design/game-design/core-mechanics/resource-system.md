@@ -59,7 +59,7 @@ function updateResource(current: number, change: number, min: number, max: numbe
 - **Money ≤ -500**: "Bankruptcy - You can't cover basic expenses"
 
 ### Success Conditions
-- **Turn Limit**: Complete 15 turns successfully
+- **Turn Limit**: Complete 5 turns successfully (`TOTAL_TURNS`)
 - **Excellence**: Achieve 80+ in all resources
 - **Millionaire**: Reach 500+ money (rare achievement)
 
@@ -83,7 +83,7 @@ Bonus Multipliers:
 6. **End Check**: Evaluate win/loss conditions
 
 ### Turn Duration
-- **Total Turns**: 15 (represents 15 days of operation)
+- **Total Turns**: 5 (represents 5 days of operation; change via `TOTAL_TURNS` in `web/src/lib/types/core.ts`)
 - **Escalation**: Later turns have higher stakes and more complex scenarios
 
 ## Design Rationale

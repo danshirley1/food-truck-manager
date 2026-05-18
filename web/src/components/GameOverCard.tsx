@@ -1,6 +1,6 @@
 'use client';
 
-import { GameState } from '@/lib/game';
+import { GameState, TOTAL_TURNS } from '@/lib/game';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,7 @@ export function GameOverCard({ gameState, onRestart }: GameOverCardProps) {
         return {
           icon: <Trophy className="w-12 h-12 text-yellow-500" />,
           title: 'Victory!',
-          message: 'You successfully managed your food truck for 15 days!',
+          message: `You successfully managed your food truck for ${TOTAL_TURNS} days!`,
           variant: 'default' as const,
           bgClass: 'bg-green-50 border-green-200'
         };

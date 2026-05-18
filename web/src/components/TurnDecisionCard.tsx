@@ -1,6 +1,6 @@
 'use client';
 
-import { Scenario, Choice, MenuOption, RiskLevel } from '@/lib/game';
+import { Scenario, Choice, MenuOption, TOTAL_TURNS } from '@/lib/game';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,8 +14,9 @@ import {
   UtensilsCrossed,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MenuSpecialImage } from '@/components/MenuSpecialImage';
 
-const TOTAL_DAYS = 15;
+const MENU_OPTION_LETTERS = ['A', 'B', 'C'] as const;
 
 interface TurnDecisionCardProps {
   dayNumber: number;
@@ -26,6 +27,7 @@ interface TurnDecisionCardProps {
   onSelectMenu: (option: MenuOption) => void;
   onSubmit: () => void;
   disabled?: boolean;
+  isMenuImageLoading?: (optionId: string) => boolean;
 }
 
 function formatResourceChange(value: number | undefined): string {
@@ -36,21 +38,6 @@ function formatResourceChange(value: number | undefined): string {
 function getEffectVariant(value: number | undefined) {
   if (!value) return 'secondary';
   return value > 0 ? 'default' : 'destructive';
-}
-
-function RiskBadge({ level }: { level?: RiskLevel }) {
-  if (!level) return null;
-  const config = {
-    safe: { label: 'Low risk', variant: 'secondary' as const },
-    moderate: { label: 'Medium risk', variant: 'outline' as const },
-    risky: { label: 'High risk', variant: 'destructive' as const },
-  };
-  const { label, variant } = config[level];
-  return (
-    <Badge variant={variant} className="text-xs shrink-0">
-      {label}
-    </Badge>
-  );
 }
 
 function EffectBadges({ effects }: { effects: Choice['effects'] }) {
@@ -95,13 +82,14 @@ function StepNumber({ n }: { n: number }) {
   );
 }
 
-function selectionCardClass(selected: boolean, extra?: string) {
+function pickCardClass(selected: boolean, extra?: string) {
   return cn(
-    'w-full rounded-lg border-2 p-4 text-left transition-colors duration-150 cursor-pointer',
+    'w-full rounded-xl border-2 text-left',
+    'transition-all duration-200 cursor-pointer',
     'disabled:opacity-50 disabled:cursor-not-allowed',
     selected
-      ? 'border-orange-500 bg-orange-50/50 hover:bg-orange-100'
-      : 'border-border bg-background hover:bg-orange-50 hover:border-orange-300',
+      ? 'border-orange-500 bg-gradient-to-r from-orange-50 via-amber-50/80 to-orange-50 shadow-md ring-2 ring-orange-200/60 scale-[1.01]'
+      : 'border-orange-200/90 bg-white hover:border-orange-400 hover:bg-orange-50/40 hover:shadow-sm hover:-translate-y-0.5',
     extra
   );
 }
@@ -115,6 +103,7 @@ export function TurnDecisionCard({
   onSelectMenu,
   onSubmit,
   disabled,
+  isMenuImageLoading,
 }: TurnDecisionCardProps) {
   const canSubmit =
     !disabled && selectedBusinessId !== null && selectedMenuId !== null;
@@ -123,7 +112,7 @@ export function TurnDecisionCard({
     <Card className="w-full mb-6">
       <CardHeader className="pb-3 space-y-4">
         <Badge variant="outline" className="w-fit">
-          Today (day {dayNumber}/{TOTAL_DAYS})
+          Today (day {dayNumber}/{TOTAL_TURNS})
         </Badge>
         <p className="flex items-center gap-2 text-base font-semibold text-foreground">
           <MapPin className="w-4 h-4 shrink-0 text-orange-600" />
@@ -166,14 +155,14 @@ export function TurnDecisionCard({
                 type="button"
                 disabled={disabled}
                 onClick={() => onSelectBusiness(choice)}
-                className={selectionCardClass(selectedBusinessId === choice.id)}
+                className={pickCardClass(
+                  selectedBusinessId === choice.id,
+                  'p-4'
+                )}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <span className="font-medium">
-                    {index + 1}. {choice.label}
-                  </span>
-                  <RiskBadge level={choice.riskLevel} />
-                </div>
+                <p className="font-medium leading-snug">
+                  {index + 1}. {choice.label}
+                </p>
                 <EffectBadges effects={choice.effects} />
               </button>
             ))}
@@ -194,17 +183,53 @@ export function TurnDecisionCard({
             Pick what fits the crowd — choose wisely!
           </p>
           <div className="space-y-3 pl-11">
-            {scenario.menuOptions.map((option, index) => (
-              <button
-                key={option.id}
-                type="button"
-                disabled={disabled}
-                onClick={() => onSelectMenu(option)}
-                className={selectionCardClass(selectedMenuId === option.id, 'font-medium')}
-              >
-                {index + 1}. {option.label}
-              </button>
-            ))}
+            {scenario.menuOptions.map((option, index) => {
+              const selected = selectedMenuId === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onSelectMenu(option)}
+                  className={pickCardClass(
+                    selected,
+                    'p-3 sm:p-4 flex gap-3 sm:gap-4 items-center'
+                  )}
+                >
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-start gap-2.5">
+                      <span
+                        className={cn(
+                          'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white shadow',
+                          selected ? 'bg-orange-600' : 'bg-orange-500'
+                        )}
+                      >
+                        {MENU_OPTION_LETTERS[index]}
+                      </span>
+                      <div className="min-w-0 pt-0.5">
+                        <p className="font-bold text-foreground leading-tight">
+                          {option.label}
+                        </p>
+                        {selected && (
+                          <span className="text-xs font-semibold text-orange-600">
+                            On the board!
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-snug pl-[2.625rem]">
+                      {option.description}
+                    </p>
+                  </div>
+                  <MenuSpecialImage
+                    src={option.imageUrl}
+                    alt={option.label}
+                    size="card-row"
+                    loading={isMenuImageLoading?.(option.id) ?? false}
+                  />
+                </button>
+              );
+            })}
           </div>
         </section>
 

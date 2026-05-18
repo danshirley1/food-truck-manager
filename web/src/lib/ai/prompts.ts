@@ -2,7 +2,7 @@
  * Prompt builders for AI scenario generation.
  */
 
-import { ScenarioContext } from '../types';
+import { ScenarioContext, TOTAL_TURNS } from '../types';
 
 export const SYSTEM_PROMPT = `You are a content generator for a family-friendly food truck management game.
 
@@ -12,8 +12,8 @@ RULES:
 - Output must be valid JSON matching the provided schema exactly
 - Resource effects are deltas: money, reputation, energy (integers only)
 - Per-field effect limits by difficulty: early ±10, mid ±15, late ±20
-- EVERY business choice and EVERY menu option must include at least one negative effect (tradeoff)
-- Business choices need riskLevel: safe, moderate, or risky
+- MIXED EFFECTS (critical): For EVERY business choice and EVERY menu option, effects must include at least one positive AND at least one negative among money, reputation, energy. Never all three positive (too good) or all three negative (too bad) on a single option.
+- Business choices need riskLevel (safe, moderate, risky) for schema only — do not make it obvious from effects alone
 - dayContext: location (short, specific venue name), crowdDetail (2-3 sentences on who is here and what they want), crowdVibe (one cheeky/funny line summing up the crowd)
 - VARIETY: Each day must feel like a new stop on a tour — change location type AND crowd archetype every time. Never repeat a location name, venue type, or crowd profile from the avoid lists in the user prompt.
 - Rotate across diverse venues: office parks, stadiums, beaches, university campuses, hospitals, airports, night markets, weddings, construction sites, ski lodges, food festivals, suburban block parties, tourist landmarks, train stations, etc.
@@ -23,6 +23,8 @@ RULES:
   (C) BAD FIT — wrong dish: weakest net outcome, include negatives on money or reputation
   Spread effects so (A) scores much better than (B), and (B) better than (C) — never three similar outcomes
 - verdictReason on each option must match its tier (A enthusiastic, B lukewarm, C explains the flop)
+- description on each menuOption: one appetizing sentence for the menu card (what it is / why it sounds good); no resource stats, no spoilers about crowd fit
+- imagePrompt on each menuOption: food-photo description for a MEDIUM WIDE SHOT — entire dish visible on plate/tray, not macro close-up; appetizing; no text/people/logos
 - menuPrompt: one sentence asking what special goes on the board today
 
 Return ONLY valid JSON.`;
@@ -74,23 +76,35 @@ const VENUE_THEME_HINTS = [
 const menuItemSchema = {
   type: 'object' as const,
   additionalProperties: false,
-  required: ['label', 'effects', 'verdictReason'] as const,
+  required: ['label', 'description', 'effects', 'verdictReason', 'imagePrompt'] as const,
   properties: {
     label: { type: 'string' as const },
+    description: { type: 'string' as const },
     effects: effectsSchema,
     verdictReason: { type: 'string' as const },
+    imagePrompt: { type: 'string' as const },
   },
 };
 
+export interface BuildUserPromptOptions {
+  strict?: boolean;
+  validationError?: string;
+}
+
 export function buildUserPrompt(
   context: ScenarioContext,
-  strict = false
+  options: BuildUserPromptOptions = {}
 ): string {
+  const { strict = false, validationError } = options;
   const { currentResources, turn, difficultyLevel, recentChoices, availableTags } =
     context;
 
   const strictNote = strict
-    ? '\nSTRICT MODE: Smaller effects. Every option still needs a negative effect.'
+    ? '\nSTRICT MODE: Smaller effects. Every option still needs a negative integer on money, reputation, or energy.'
+    : '';
+
+  const retryNote = validationError
+    ? `\nPREVIOUS ATTEMPT REJECTED: ${validationError}\nFix this and regenerate the full scenario.`
     : '';
 
   const recentIds =
@@ -116,13 +130,13 @@ export function buildUserPrompt(
 - Money: ${currentResources.money}
 - Reputation: ${currentResources.reputation}
 - Energy: ${currentResources.energy}
-- Turn: ${turn}/15
+- Turn: ${turn}/${TOTAL_TURNS}
 - Required difficulty: ${difficultyLevel}
 
 Recent tags to avoid: ${recentChoices.join(', ') || 'none'}
 Allowed tags (1-3): ${availableTags.join(', ')}
 ${recentIds}${recentLocations}${recentCrowds}${venueHint}
-${strictNote}
+${strictNote}${retryNote}
 
 Generate one ${difficultyLevel} scenario with dayContext, 2-4 business choices, menuPrompt, and exactly 3 menuOptions (one best / one okay / one bad fit for the crowd).`;
 }

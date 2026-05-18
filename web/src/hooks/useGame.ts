@@ -11,10 +11,11 @@ import {
 } from '@/lib/game';
 import { ApiScenarioLoader } from '@/lib/scenarios/api-scenario-loader';
 import { getVenueThemeHint } from '@/lib/ai/prompts';
+import { useMenuImages } from '@/hooks/useMenuImages';
 
 export function useGame() {
   const [gameState, setGameState] = useState<GameState>(() =>
-    GameStateManager.createNew()
+    GameStateManager.createNew(undefined, undefined, 0)
   );
   const [currentScenario, setCurrentScenario] = useState<Scenario | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,13 +25,15 @@ export function useGame() {
   );
   const [selectedMenuId, setSelectedMenuId] = useState<string | null>(null);
 
+  const { loadMenuImages, isMenuImageLoading } = useMenuImages(setCurrentScenario);
+
   const clearTurnSelection = useCallback(() => {
     setSelectedBusinessId(null);
     setSelectedMenuId(null);
   }, []);
 
   const buildScenarioContext = useCallback((state: GameState): ScenarioContext => {
-    const difficulty = GameStateManager.getCurrentDifficulty(state.turn + 1);
+    const difficulty = GameStateManager.getCurrentDifficulty(state.turn);
 
     const recentChoices = state.choiceHistory
       .slice(-3)
@@ -60,17 +63,15 @@ export function useGame() {
     const recentCrowdVibes = recentHistory
       .map((record) => record.dayCrowdVibe)
       .filter((vibe): vibe is string => Boolean(vibe));
-    const nextTurn = state.turn + 1;
-
     return {
       currentResources: state.resources,
-      turn: nextTurn,
+      turn: state.turn,
       difficultyLevel: difficulty,
       recentChoices,
       recentScenarioIds,
       recentLocations,
       recentCrowdVibes,
-      venueThemeHint: getVenueThemeHint(nextTurn),
+      venueThemeHint: getVenueThemeHint(state.turn),
       availableTags: [
         'customer-service',
         'supply-management',
@@ -96,6 +97,7 @@ export function useGame() {
         const scenario = await ApiScenarioLoader.getScenario(context);
         setCurrentScenario(scenario);
         clearTurnSelection();
+        loadMenuImages(scenario);
         return scenario;
       } catch (error) {
         const message =
@@ -108,7 +110,7 @@ export function useGame() {
         setIsLoading(false);
       }
     },
-    [buildScenarioContext, clearTurnSelection]
+    [buildScenarioContext, clearTurnSelection, loadMenuImages]
   );
 
   const submitTurn = useCallback(async () => {
@@ -181,6 +183,18 @@ export function useGame() {
     await fetchScenario(gameState);
   }, [gameState, fetchScenario]);
 
+  const onVerdictImageLoaded = useCallback((url: string) => {
+    setGameState((prev) => {
+      if (!prev.lastMenuFeedback || prev.lastMenuFeedback.menuImageUrl) {
+        return prev;
+      }
+      return {
+        ...prev,
+        lastMenuFeedback: { ...prev.lastMenuFeedback, menuImageUrl: url },
+      };
+    });
+  }, []);
+
   return {
     gameState,
     currentScenario,
@@ -190,9 +204,11 @@ export function useGame() {
     selectedMenuId,
     selectBusiness,
     selectMenu,
+    isMenuImageLoading,
     submitTurn,
     startNewGame,
     restartGame,
     retryLoadScenario,
+    onVerdictImageLoaded,
   };
 }

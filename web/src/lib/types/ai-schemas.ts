@@ -38,8 +38,10 @@ export const GeneratedChoiceSchema = z.object({
 
 export const GeneratedMenuOptionSchema = z.object({
   label: z.string().min(5).max(120),
+  description: z.string().min(10).max(160),
   effects: GeneratedEffectsSchema,
   verdictReason: z.string().min(15).max(200),
+  imagePrompt: z.string().min(20).max(400),
 });
 
 export const GeneratedScenarioSchema = z.object({
@@ -112,18 +114,70 @@ export function normalizeChoiceEffects(
   return normalized;
 }
 
-function choiceHasNegativeEffect(effects: {
-  money: number;
-  reputation: number;
-  energy: number;
-}): boolean {
+type GeneratedEffects = z.infer<typeof GeneratedEffectsSchema>;
+
+function choiceHasNegativeEffect(effects: GeneratedEffects): boolean {
   return effects.money < 0 || effects.reputation < 0 || effects.energy < 0;
 }
 
-function everyOptionHasTradeoff(
+function choiceHasPositiveEffect(effects: GeneratedEffects): boolean {
+  return effects.money > 0 || effects.reputation > 0 || effects.energy > 0;
+}
+
+function effectsAreMixed(effects: GeneratedEffects): boolean {
+  return choiceHasNegativeEffect(effects) && choiceHasPositiveEffect(effects);
+}
+
+/** Every option needs upsides and downsides — never all stats good or all bad */
+function enforceMixedEffects(
+  effects: GeneratedEffects,
+  difficulty: DifficultyLevel
+): GeneratedEffects {
+  const max = DIFFICULTY_MAX_EFFECT[difficulty];
+  let normalized = { ...effects };
+
+  if (!choiceHasNegativeEffect(normalized)) {
+    const energyPenalty = difficulty === 'early' ? -2 : difficulty === 'mid' ? -3 : -4;
+    normalized = {
+      ...normalized,
+      energy: clampEffect(Math.min(normalized.energy, energyPenalty), max),
+    };
+  }
+
+  if (!choiceHasPositiveEffect(normalized)) {
+    const boost = difficulty === 'early' ? 4 : difficulty === 'mid' ? 5 : 6;
+    if (normalized.reputation <= normalized.money) {
+      normalized.reputation = clampEffect(
+        Math.max(normalized.reputation, boost),
+        max
+      );
+    } else {
+      normalized.money = clampEffect(Math.max(normalized.money, boost), max);
+    }
+  }
+
+  return normalized;
+}
+
+function preprocessGeneratedScenario(data: GeneratedScenario): GeneratedScenario {
+  const { difficulty } = data;
+  return {
+    ...data,
+    choices: data.choices.map((choice) => ({
+      ...choice,
+      effects: enforceMixedEffects(choice.effects, difficulty),
+    })),
+    menuOptions: data.menuOptions.map((option) => ({
+      ...option,
+      effects: enforceMixedEffects(option.effects, difficulty),
+    })),
+  };
+}
+
+function everyOptionHasMixedEffects(
   options: Array<{ effects: { money: number; reputation: number; energy: number } }>
 ): boolean {
-  return options.every((o) => choiceHasNegativeEffect(o.effects));
+  return options.every((o) => effectsAreMixed(o.effects));
 }
 
 function hasReasonableChoice(
@@ -166,6 +220,8 @@ export function mapGeneratedToScenario(
     menuOptions: generated.menuOptions.map((option, index) => ({
       id: slugify(option.label, index + 1),
       label: option.label,
+      description: option.description,
+      imagePrompt: option.imagePrompt,
       effects: normalizeChoiceEffects(option.effects, difficulty),
       verdictReason: option.verdictReason,
     })),
@@ -182,30 +238,33 @@ export function validateGeneratedScenario(
     return { success: false, error: parsed.error.message };
   }
 
-  const { choices, menuOptions } = parsed.data;
+  const data = preprocessGeneratedScenario(parsed.data);
+  const { choices, menuOptions } = data;
 
-  if (!everyOptionHasTradeoff(choices)) {
+  if (!everyOptionHasMixedEffects(choices)) {
     return {
       success: false,
-      error: 'Each business choice must include at least one negative effect',
+      error:
+        'Each business choice must mix positive and negative effects (never all good or all bad)',
     };
   }
 
-  if (!everyOptionHasTradeoff(menuOptions)) {
+  if (!everyOptionHasMixedEffects(menuOptions)) {
     return {
       success: false,
-      error: 'Each menu option must include at least one negative effect',
+      error:
+        'Each menu option must mix positive and negative effects (never all good or all bad)',
     };
   }
 
-  if (!hasReasonableChoice(choices, parsed.data.difficulty)) {
+  if (!hasReasonableChoice(choices, data.difficulty)) {
     return {
       success: false,
       error: 'All business choices are excessively punitive',
     };
   }
 
-  if (!menuOptionsHaveDistinctTiers(menuOptions, parsed.data.difficulty)) {
+  if (!menuOptionsHaveDistinctTiers(menuOptions, data.difficulty)) {
     return {
       success: false,
       error:
@@ -213,5 +272,5 @@ export function validateGeneratedScenario(
     };
   }
 
-  return { success: true, data: parsed.data };
+  return { success: true, data };
 }

@@ -30,7 +30,7 @@ export interface ResourceEffects {
  */
 export interface GameState {
   sessionId: string;           // Unique session identifier
-  turn: number;                // Current turn (1-15)
+  turn: number;                // 0 = lobby; 1–TOTAL_TURNS = current day (see web/src/lib/types/core.ts)
   resources: Resources;        // Current resource levels
   gameOver: boolean;          // True if game ended
   endReason?: EndReason;      // Why game ended (if gameOver)
@@ -88,7 +88,7 @@ export interface Scenario {
 ### Enumerations
 ```typescript
 export type EndReason = 
-  | 'victory'          // Completed all 15 turns
+  | 'victory'          // Completed all TOTAL_TURNS
   | 'burnout'         // Energy reached 0
   | 'reputation-death' // Reputation reached 0  
   | 'bankruptcy';     // Money dropped below -500
@@ -99,9 +99,9 @@ export type RiskLevel =
   | 'risky';          // Large variance possible
 
 export type DifficultyLevel = 
-  | 'early'           // Turns 1-5
-  | 'mid'             // Turns 6-10
-  | 'late';           // Turns 11-15
+  | 'early'           // First third of run (e.g. days 1–2 when TOTAL_TURNS=5)
+  | 'mid'             // Middle third
+  | 'late';           // Final third
 
 export type ScenarioTag = 
   | 'customer-service'

@@ -74,18 +74,20 @@ For Heroku, set the config var: `heroku config:set OPENAI_API_KEY=sk-... --app f
 1. Configure `web/.env` (see above), then run `yarn dev`
 2. Open http://localhost:3000 in your browser
 3. Click "Start Your Food Truck Adventure"
-4. Make decisions to manage your resources over 15 days
+4. Each day: pick a **business decision**, then a **menu special (A/B/C)**, and submit
 
 ## 🎯 Game Rules
 
-Manage your food truck for 15 days by balancing three resources:
+Manage your food truck for **5 days** by balancing three resources:
 
 - **💰 Money (-999 to +999)**: Your financial health
 - **⭐ Reputation (0-100%)**: Customer satisfaction
 - **⚡ Energy (0-100%)**: Your physical and mental capacity
 
-**Win**: Complete all 15 days successfully
-**Lose**: Run out of energy (≤0), reputation (≤0), or money (≤-500)
+**Win**: Complete all 5 days successfully  
+**Lose**: Energy ≤ 0, reputation ≤ 0, or money ≤ 0
+
+Menu specials use optional AI-generated photos (`OPENAI_IMAGE_MODEL`, default `gpt-image-1-mini`). Set `MENU_IMAGES_ENABLED=false` to skip images.
 
 ## 🏗️ Architecture
 
@@ -102,15 +104,17 @@ Next.js App (TypeScript + React)
 ```
 
 **Tech Stack:**
-- Next.js 14 with App Router
+- Next.js 15 with App Router
 - React with TypeScript
 - Tailwind CSS + shadcn/ui
 - Zod for validation
 
 ## 📚 Documentation
 
+- **Current implementation (AI-maintained):** `docs/ai-generated/CURRENT_IMPLEMENTATION.md`
+- **Menu images:** `docs/ai-generated/MENU_IMAGES.md`
 - **Design Docs**: `design_docs/food-truck-manager-design/`
-- **Web README**: `web/README.md`
+- **Env template**: `web/.env.example`
 
 ---
 

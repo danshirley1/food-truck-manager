@@ -1,5 +1,8 @@
 # AI Structured Output Schema
 
+> **Implementation:** `web/src/lib/types/ai-schemas.ts`, `web/src/lib/ai/prompts.ts`  
+> **Game length:** 5 days (`TOTAL_TURNS` in `web/src/lib/types/core.ts`)
+
 ## Request
 
 `POST /api/scenarios/generate` with a `ScenarioContext` body:
@@ -12,41 +15,48 @@
   "recentChoices": [],
   "availableTags": ["customer-service", "supply-management"],
   "recentScenarioIds": [],
-  "tone": "standard"
+  "recentLocations": [],
+  "recentCrowdVibes": [],
+  "venueThemeHint": "weekday office lunch rush"
 }
 ```
+
+`turn` is the **current day** (1–5), not zero-based.
 
 ## LLM output (before server enrichment)
 
 ```json
 {
   "title": "Rush Hour Queue",
-  "text": "A long line forms at your truck during lunch. You are running low on prep space and one grill is acting up.",
+  "text": "A long line forms at your truck during lunch.",
   "tags": ["customer-service", "equipment"],
   "difficulty": "early",
   "dayContext": {
-    "location": "City centre office park, weekday lunch rush",
-    "crowdProfile": "Office workers with 30 minutes — want fast, portable meals"
+    "location": "Greystone Office Park",
+    "crowdDetail": "Office workers in their 30s want quick portable lunches.",
+    "crowdVibe": "Hangry but polite — speed is everything."
   },
   "menuPrompt": "What special goes on the board for this crowd?",
   "menuOptions": [
-    { "label": "Loaded burrito bowl special", "effects": { "money": 8, "reputation": 5, "energy": -4 } },
-    { "label": "Truffle risotto cup", "effects": { "money": -5, "reputation": -3, "energy": -6 } },
-    { "label": "Classic burger combo", "effects": { "money": 5, "reputation": 2, "energy": -5 } }
+    {
+      "label": "Loaded burrito bowl special",
+      "description": "Hearty bowl, easy to eat standing up.",
+      "imagePrompt": "loaded burrito bowl on tray, medium wide shot, appetizing food photo",
+      "effects": { "money": 8, "reputation": 5, "energy": -4 },
+      "verdictReason": "Portable and filling — exactly what this crowd wanted."
+    }
   ],
   "choices": [
     {
-      "label": "Offer samples while people wait to keep them happy",
+      "label": "Offer samples while people wait",
       "effects": { "money": -5, "reputation": 6, "energy": -4 },
       "riskLevel": "safe"
-    },
-    {
-      "label": "Limit the menu to your fastest items only",
-      "effects": { "money": 3, "reputation": -2, "energy": -6 }
     }
   ]
 }
 ```
+
+Exactly **3** `menuOptions`. `riskLevel` is required in the JSON schema but **not shown in the UI**.
 
 ## Response (after validation)
 
@@ -56,15 +66,24 @@
   "scenario": {
     "id": "ai-1-abc123",
     "title": "Rush Hour Queue",
-    "text": "...",
-    "tags": ["customer-service", "equipment"],
     "difficulty": "early",
     "createdBy": "ai",
-    "createdAt": "2026-05-17T12:00:00.000Z",
+    "dayContext": { "location": "...", "crowdDetail": "...", "crowdVibe": "..." },
+    "menuPrompt": "...",
+    "menuOptions": [
+      {
+        "id": "loaded-burrito-bowl-1",
+        "label": "...",
+        "description": "...",
+        "imagePrompt": "...",
+        "effects": { "money": 8, "reputation": 5, "energy": -4 },
+        "verdictReason": "..."
+      }
+    ],
     "choices": [
       {
-        "id": "offer-samples-while-people-1",
-        "label": "Offer samples while people wait to keep them happy",
+        "id": "offer-samples-1",
+        "label": "...",
         "effects": { "money": -5, "reputation": 6, "energy": -4 },
         "riskLevel": "safe"
       }
@@ -74,18 +93,34 @@
 }
 ```
 
+`imageUrl` on menu options is filled **client-side** via `POST /api/scenarios/menu-image`, not in this response.
+
 ## Server-assigned fields
 
-The LLM does not set `id`, `createdBy`, or `createdAt`. The server assigns those after Zod validation and effect normalization.
+The LLM does not set `id`, `createdBy`, or `createdAt`. The server assigns those after Zod validation and effect normalization (`mapGeneratedToScenario`).
 
 ## Effect enforcement
 
 | Layer | Rule |
 |-------|------|
-| Zod | Per-field ±20 |
-| Normalizer | Difficulty caps (early ±10, mid ±15, late ±20); max impact 35 per choice |
-| `GameStateManager.applyTurn` | Max cumulative delta 30 per turn (business + menu combined) |
+| Zod | Per-field ±20 on effects |
+| `preprocessGeneratedScenario` | `enforceMixedEffects` — each choice and menu option must have ≥1 positive and ≥1 negative stat |
+| Validation | `everyOptionHasMixedEffects`, `menuOptionsHaveDistinctTiers`, `hasReasonableChoice` |
+| Normalizer | Difficulty caps: early ±10, mid ±15, late ±20 |
+| `GameStateManager.applyTurn` | Max cumulative delta per turn (business + menu) |
+
+## Menu images (separate endpoint)
+
+`POST /api/scenarios/menu-image`
+
+```json
+{ "label": "Loaded burrito bowl", "imagePrompt": "...", "location": "Greystone Office Park" }
+```
+
+Returns `{ "success": true, "imageUrl": "..." }` or `null` if generation failed/disabled.
+
+See `docs/ai-generated/MENU_IMAGES.md`.
 
 ## Environment
 
-`OPENAI_API_KEY` is required. See `web/.env.example`.
+See `web/.env.example`: `OPENAI_API_KEY` (required), `OPENAI_MODEL`, `OPENAI_IMAGE_MODEL`, `MENU_IMAGES_ENABLED`.

@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { TOTAL_TURNS } from './core';
 
 export const ResourcesSchema = z.object({
   money: z.number().min(-999).max(999),
@@ -49,17 +50,23 @@ export const DayContextSchema = z.object({
 export const MenuOptionSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
   label: z.string().min(5).max(120),
+  description: z.string().min(10).max(160),
+  imagePrompt: z.string().min(20).max(400).optional(),
   effects: ResourceEffectsSchema,
   verdictReason: z.string().min(15).max(200),
+  imageUrl: z.string().min(1).optional(),
 });
 
 export const MenuFeedbackSchema = z.object({
-  turn: z.number().min(1).max(15),
+  turn: z.number().min(1).max(TOTAL_TURNS),
   menuLabel: z.string(),
   stars: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   message: z.string(),
   verdictReason: z.string(),
   menuEffects: ResourceEffectsSchema,
+  menuImageUrl: z.string().min(1).optional(),
+  imagePrompt: z.string().optional(),
+  dayLocation: z.string().optional(),
 });
 
 export const ScenarioSchema = z.object({
@@ -89,7 +96,7 @@ export const AchievementSchema = z.object({
 });
 
 export const ChoiceRecordSchema = z.object({
-  turn: z.number().min(1).max(15),
+  turn: z.number().min(1).max(TOTAL_TURNS),
   scenarioId: z.string(),
   choiceId: z.string(),
   effects: ResourceEffectsSchema,
@@ -106,7 +113,7 @@ export const ChoiceRecordSchema = z.object({
 
 export const GameStateSchema = z.object({
   sessionId: z.string(),
-  turn: z.number().min(0).max(15),
+  turn: z.number().min(0).max(TOTAL_TURNS),
   resources: ResourcesSchema,
   gameOver: z.boolean(),
   endReason: EndReasonSchema.optional(),
@@ -122,7 +129,7 @@ export const GameStateSchema = z.object({
 
 export const ScenarioContextSchema = z.object({
   currentResources: ResourcesSchema,
-  turn: z.number().min(1).max(15),
+  turn: z.number().min(1).max(TOTAL_TURNS),
   difficultyLevel: DifficultyLevelSchema,
   recentChoices: z.array(z.string()),
   availableTags: z.array(ScenarioTagSchema),

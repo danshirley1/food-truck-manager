@@ -43,7 +43,7 @@ export async function moderateScenarioContent(scenario: {
   text: string;
   choices: Array<{ label: string }>;
   menuPrompt?: string;
-  menuOptions?: Array<{ label: string; verdictReason?: string }>;
+  menuOptions?: Array<{ label: string; description?: string; verdictReason?: string }>;
   dayContext?: { location: string; crowdDetail: string; crowdVibe: string };
 }): Promise<boolean> {
   const texts = [
@@ -54,7 +54,11 @@ export async function moderateScenarioContent(scenario: {
     scenario.dayContext?.crowdVibe ?? '',
     scenario.menuPrompt ?? '',
     ...scenario.choices.map((c) => c.label),
-    ...(scenario.menuOptions?.flatMap((m) => [m.label, m.verdictReason ?? '']) ?? []),
+    ...(scenario.menuOptions?.flatMap((m) => [
+      m.label,
+      m.description ?? '',
+      m.verdictReason ?? '',
+    ]) ?? []),
   ];
   return moderateTexts(texts);
 }
