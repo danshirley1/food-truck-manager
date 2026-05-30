@@ -6,6 +6,7 @@ import { ScenarioContextSchema } from '@/lib/types/validation';
 import { generateScenario } from '@/lib/ai/generate-scenario';
 import { assertOpenAiConfigured } from '@/lib/ai/provider';
 import { checkRateLimit, getRateLimitKey } from '@/lib/ai/rate-limit';
+import { isDevLlmDebugEnabled } from '@/lib/types/llm-dev-debug';
 
 export async function POST(request: Request) {
   try {
@@ -44,11 +45,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const scenario = await generateScenario(parsed.data);
+    const { scenario, dev } = await generateScenario(parsed.data);
 
     return Response.json({
       success: true,
       scenario,
+      ...(isDevLlmDebugEnabled() && dev ? { dev } : {}),
     });
   } catch (error) {
     const message =

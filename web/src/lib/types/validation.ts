@@ -51,10 +51,10 @@ export const MenuOptionSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
   label: z.string().min(5).max(120),
   description: z.string().min(10).max(160),
-  imagePrompt: z.string().min(20).max(400).optional(),
+  imageSearchTerm: z.string().min(3).max(80).optional(),
+  imageUrl: z.string().url().optional(),
   effects: ResourceEffectsSchema,
   verdictReason: z.string().min(15).max(200),
-  imageUrl: z.string().min(1).optional(),
 });
 
 export const MenuFeedbackSchema = z.object({
@@ -64,8 +64,7 @@ export const MenuFeedbackSchema = z.object({
   message: z.string(),
   verdictReason: z.string(),
   menuEffects: ResourceEffectsSchema,
-  menuImageUrl: z.string().min(1).optional(),
-  imagePrompt: z.string().optional(),
+  menuImageUrl: z.string().url().optional(),
   dayLocation: z.string().optional(),
 });
 

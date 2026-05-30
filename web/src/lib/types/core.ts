@@ -48,12 +48,13 @@ export interface MenuOption {
   label: string;
   /** Short appetizing blurb shown on the menu card (no stats or spoilers) */
   description: string;
-  /** Used server-side / client fetch for image generation; not shown in UI */
-  imagePrompt?: string;
+  /** Plain dish name passed to OpenAI web search for the photo; not shown in UI */
+  imageSearchTerm?: string;
+  /** HTTPS food photo URL from OpenAI web search */
+  imageUrl?: string;
   effects: ResourceEffects;
   /** One sentence shown after serve — why this special fit or flopped */
   verdictReason: string;
-  imageUrl?: string;
 }
 
 export interface MenuFeedback {
@@ -64,8 +65,6 @@ export interface MenuFeedback {
   verdictReason: string;
   menuEffects: ResourceEffects;
   menuImageUrl?: string;
-  /** Used to generate verdict image if the player submitted before the card loaded */
-  imagePrompt?: string;
   dayLocation?: string;
 }
 

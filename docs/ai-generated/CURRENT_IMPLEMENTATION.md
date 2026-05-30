@@ -73,7 +73,6 @@ Per-turn cap: combined business + menu deltas capped in `GameStateManager.applyT
 {
   label: string;
   description: string;
-  imagePrompt: string;
   effects: { money, reputation, energy };
   verdictReason: string;
 }
@@ -81,24 +80,22 @@ Per-turn cap: combined business + menu deltas capped in `GameStateManager.applyT
 
 ## Menu images
 
-Images are **not** blocking scenario text; they load in parallel after the scenario arrives.
+After scenario text, **one OpenAI web search call** (Responses API) finds a direct HTTPS image URL for each menu special. No third-party food APIs.
 
 | Piece | Role |
 |-------|------|
-| `useMenuImages` | Client: 3× `POST /api/scenarios/menu-image` per scenario |
-| `generate-menu-images.ts` | Server: OpenAI Images API |
-| `MenuSpecialImage` | Placeholder + “Plating…” spinner |
-| `MenuFeedbackBanner` | If submit happened before image loaded, **refetches** using `imagePrompt` + `dayLocation` on `lastMenuFeedback` |
+| `resolve-menu-image-url.ts` | Batched OpenAI `web_search` → `imageUrl` per dish |
+| `generate-scenario.ts` | Calls `attachMenuImageUrls` after moderation |
+| `MenuSpecialImage` | Placeholder if URL missing or fails to load |
+
+Optional env: `OPENAI_SEARCH_MODEL` (default `gpt-4o-mini`).
 
 ### Env
 
 ```bash
 OPENAI_API_KEY=          # required
-OPENAI_IMAGE_MODEL=      # default gpt-image-1-mini (fastest default)
-MENU_IMAGES_ENABLED=false  # skip images entirely
+OPENAI_MODEL=            # default gpt-4o-mini
 ```
-
-**Model fallback order:** preferred env → `gpt-image-1-mini` → `dall-e-2` (512×512) → `gpt-image-1`. GPT Image models use `quality: low`, `output_format: webp`, `1024x1024`.
 
 ## Key files
 
@@ -107,7 +104,7 @@ MENU_IMAGES_ENABLED=false  # skip images entirely
 | UI | `TurnDecisionCard.tsx`, `MenuFeedbackBanner.tsx`, `GameBoard.tsx`, `page.tsx` |
 | State | `hooks/useGame.ts`, `lib/engine/game-state.ts` |
 | AI | `lib/ai/prompts.ts`, `generate-scenario.ts`, `validate-scenario.ts`, `ai-schemas.ts` |
-| Images | `lib/ai/generate-menu-images.ts`, `hooks/useMenuImages.ts`, `api/scenarios/menu-image/route.ts` |
+| Images | `resolve-menu-image-url.ts`, `MenuSpecialImage.tsx`, `MENU_IMAGES.md` |
 
 ## Git / deploy
 

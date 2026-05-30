@@ -87,7 +87,7 @@ Manage your food truck for **5 days** by balancing three resources:
 **Win**: Complete all 5 days successfully  
 **Lose**: Energy ≤ 0, reputation ≤ 0, or money ≤ 0
 
-Menu specials use optional AI-generated photos (`OPENAI_IMAGE_MODEL`, default `gpt-image-1-mini`). Set `MENU_IMAGES_ENABLED=false` to skip images.
+Menu specials get photo URLs from an OpenAI web search call (same API key as scenario generation).
 
 ## 🏗️ Architecture
 

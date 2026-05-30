@@ -27,7 +27,6 @@ interface TurnDecisionCardProps {
   onSelectMenu: (option: MenuOption) => void;
   onSubmit: () => void;
   disabled?: boolean;
-  isMenuImageLoading?: (optionId: string) => boolean;
 }
 
 function formatResourceChange(value: number | undefined): string {
@@ -103,7 +102,6 @@ export function TurnDecisionCard({
   onSelectMenu,
   onSubmit,
   disabled,
-  isMenuImageLoading,
 }: TurnDecisionCardProps) {
   const canSubmit =
     !disabled && selectedBusinessId !== null && selectedMenuId !== null;
@@ -225,7 +223,6 @@ export function TurnDecisionCard({
                     src={option.imageUrl}
                     alt={option.label}
                     size="card-row"
-                    loading={isMenuImageLoading?.(option.id) ?? false}
                   />
                 </button>
               );

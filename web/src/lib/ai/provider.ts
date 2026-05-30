@@ -8,10 +8,12 @@ import {
   buildUserPrompt,
   GENERATED_SCENARIO_JSON_SCHEMA,
 } from './prompts';
+import { isDevLlmDebugEnabled } from '../types/llm-dev-debug';
 
 export interface GenerateScenarioResult {
   raw: unknown;
   model: string;
+  chatCompletionResponse?: unknown;
 }
 
 export function assertOpenAiConfigured(): void {
@@ -94,5 +96,9 @@ export async function generateScenarioFromLlm(
   }
 
   const raw = JSON.parse(content) as unknown;
-  return { raw, model };
+  return {
+    raw,
+    model,
+    chatCompletionResponse: isDevLlmDebugEnabled() ? data : undefined,
+  };
 }

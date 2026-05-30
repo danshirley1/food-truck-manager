@@ -6,46 +6,32 @@
 sequenceDiagram
   participant Client
   participant Generate as POST /scenarios/generate
-  participant Image as POST /scenarios/menu-image
+  participant OpenAI as OpenAI Responses API
 
   Client->>Generate: ScenarioContext
-  Generate-->>Client: scenario (text only, no images)
-  par Three specials
-    Client->>Image: label, imagePrompt, location
-    Client->>Image: label, imagePrompt, location
-    Client->>Image: label, imagePrompt, location
-  end
-  Image-->>Client: imageUrl (base64 webp or URL)
-  Note over Client: Patches menuOptions[].imageUrl
+  Generate->>Generate: LLM scenario text (Chat Completions)
+  Generate->>OpenAI: web_search — find image URLs for 3 dishes
+  OpenAI-->>Generate: JSON with imageUrl per dish
+  Generate-->>Client: scenario with menuOptions[].imageUrl
 ```
 
-Scenario generation intentionally does **not** wait for images (`validate-scenario.ts` does not call image generation).
+After scenario text is generated, **one OpenAI Responses API call** with the `web_search` tool finds a real HTTPS image URL for each menu special. No TheMealDB, Pexels, or Wikimedia integrations.
 
-## Verdict refetch
+Each menu option includes an `imageSearchTerm` from the scenario LLM (plain dish name) to guide the image search.
 
-If the player submits before card images finish:
-
-1. `applyTurn` stores `menuImageUrl` from the option (may be undefined), plus `imagePrompt` and `dayLocation` on `lastMenuFeedback`.
-2. `MenuFeedbackBanner` mounts with no URL → calls the same `menu-image` API → shows loading state → displays image and calls `onVerdictImageLoaded` to persist URL on `gameState`.
-
-The verdict banner stays visible during the inter-turn loading spinner so the refetch can run immediately.
+If web search fails, menu cards show the utensil placeholder.
 
 ## Configuration
 
-See `web/.env.example`. Fastest practical setup:
-
 ```bash
-OPENAI_IMAGE_MODEL=gpt-image-1-mini
+OPENAI_API_KEY=           # required (same key as scenario generation)
+OPENAI_SEARCH_MODEL=        # optional, default gpt-4o-mini
 ```
 
-Disable entirely:
-
-```bash
-MENU_IMAGES_ENABLED=false
-```
+Web search incurs additional OpenAI tool-call fees per scenario.
 
 ## Implementation reference
 
-- `web/src/lib/ai/generate-menu-images.ts`
-- `web/src/hooks/useMenuImages.ts`
-- `web/src/components/MenuFeedbackBanner.tsx`
+- `web/src/lib/ai/resolve-menu-image-url.ts` — batched web search + URL attach
+- `web/src/lib/ai/generate-scenario.ts` — calls attach after moderation
+- `web/src/components/MenuSpecialImage.tsx` — display + error fallback

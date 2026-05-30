@@ -24,7 +24,7 @@ RULES:
   Spread effects so (A) scores much better than (B), and (B) better than (C) — never three similar outcomes
 - verdictReason on each option must match its tier (A enthusiastic, B lukewarm, C explains the flop)
 - description on each menuOption: one appetizing sentence for the menu card (what it is / why it sounds good); no resource stats, no spoilers about crowd fit
-- imagePrompt on each menuOption: food-photo description for a MEDIUM WIDE SHOT — entire dish visible on plate/tray, not macro close-up; appetizing; no text/people/logos
+- imageSearchTerm on each menuOption: 2-5 plain words naming the dish for a photo search (e.g. "mini beef sliders", "grilled cheese sandwich"); use common food names, no marketing adjectives
 - menuPrompt: one sentence asking what special goes on the board today
 
 Return ONLY valid JSON.`;
@@ -76,13 +76,13 @@ const VENUE_THEME_HINTS = [
 const menuItemSchema = {
   type: 'object' as const,
   additionalProperties: false,
-  required: ['label', 'description', 'effects', 'verdictReason', 'imagePrompt'] as const,
+  required: ['label', 'description', 'effects', 'verdictReason', 'imageSearchTerm'] as const,
   properties: {
     label: { type: 'string' as const },
     description: { type: 'string' as const },
     effects: effectsSchema,
     verdictReason: { type: 'string' as const },
-    imagePrompt: { type: 'string' as const },
+    imageSearchTerm: { type: 'string' as const },
   },
 };
 

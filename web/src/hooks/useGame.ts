@@ -11,7 +11,7 @@ import {
 } from '@/lib/game';
 import { ApiScenarioLoader } from '@/lib/scenarios/api-scenario-loader';
 import { getVenueThemeHint } from '@/lib/ai/prompts';
-import { useMenuImages } from '@/hooks/useMenuImages';
+import type { LlmDevDebug } from '@/lib/types/llm-dev-debug';
 
 export function useGame() {
   const [gameState, setGameState] = useState<GameState>(() =>
@@ -24,8 +24,7 @@ export function useGame() {
     null
   );
   const [selectedMenuId, setSelectedMenuId] = useState<string | null>(null);
-
-  const { loadMenuImages, isMenuImageLoading } = useMenuImages(setCurrentScenario);
+  const [llmDebug, setLlmDebug] = useState<LlmDevDebug | null>(null);
 
   const clearTurnSelection = useCallback(() => {
     setSelectedBusinessId(null);
@@ -94,10 +93,10 @@ export function useGame() {
 
       try {
         const context = buildScenarioContext(state);
-        const scenario = await ApiScenarioLoader.getScenario(context);
+        const { scenario, dev } = await ApiScenarioLoader.getScenario(context);
         setCurrentScenario(scenario);
+        setLlmDebug(dev ?? null);
         clearTurnSelection();
-        loadMenuImages(scenario);
         return scenario;
       } catch (error) {
         const message =
@@ -110,7 +109,7 @@ export function useGame() {
         setIsLoading(false);
       }
     },
-    [buildScenarioContext, clearTurnSelection, loadMenuImages]
+    [buildScenarioContext, clearTurnSelection]
   );
 
   const submitTurn = useCallback(async () => {
@@ -183,18 +182,6 @@ export function useGame() {
     await fetchScenario(gameState);
   }, [gameState, fetchScenario]);
 
-  const onVerdictImageLoaded = useCallback((url: string) => {
-    setGameState((prev) => {
-      if (!prev.lastMenuFeedback || prev.lastMenuFeedback.menuImageUrl) {
-        return prev;
-      }
-      return {
-        ...prev,
-        lastMenuFeedback: { ...prev.lastMenuFeedback, menuImageUrl: url },
-      };
-    });
-  }, []);
-
   return {
     gameState,
     currentScenario,
@@ -204,11 +191,10 @@ export function useGame() {
     selectedMenuId,
     selectBusiness,
     selectMenu,
-    isMenuImageLoading,
     submitTurn,
     startNewGame,
     restartGame,
     retryLoadScenario,
-    onVerdictImageLoaded,
+    llmDebug,
   };
 }

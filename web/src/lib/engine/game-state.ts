@@ -150,7 +150,6 @@ export class GameStateManager {
         verdictReason: menuOption.verdictReason,
         menuEffects,
         menuImageUrl: menuOption.imageUrl,
-        imagePrompt: menuOption.imagePrompt,
         dayLocation: scenario.dayContext.location,
       },
       updatedAt: new Date(),

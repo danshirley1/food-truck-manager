@@ -41,7 +41,7 @@ export const GeneratedMenuOptionSchema = z.object({
   description: z.string().min(10).max(160),
   effects: GeneratedEffectsSchema,
   verdictReason: z.string().min(15).max(200),
-  imagePrompt: z.string().min(20).max(400),
+  imageSearchTerm: z.string().min(3).max(80),
 });
 
 export const GeneratedScenarioSchema = z.object({
@@ -221,7 +221,7 @@ export function mapGeneratedToScenario(
       id: slugify(option.label, index + 1),
       label: option.label,
       description: option.description,
-      imagePrompt: option.imagePrompt,
+      imageSearchTerm: option.imageSearchTerm,
       effects: normalizeChoiceEffects(option.effects, difficulty),
       verdictReason: option.verdictReason,
     })),

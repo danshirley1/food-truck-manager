@@ -3,15 +3,22 @@
  */
 
 import { Scenario, ScenarioContext } from '../types';
+import type { LlmDevDebug } from '../types/llm-dev-debug';
 
 interface GenerateApiResponse {
   success: boolean;
   scenario?: Scenario;
+  dev?: LlmDevDebug;
   error?: string;
 }
 
+export interface ScenarioLoadResult {
+  scenario: Scenario;
+  dev?: LlmDevDebug;
+}
+
 export class ApiScenarioLoader {
-  static async getScenario(context: ScenarioContext): Promise<Scenario> {
+  static async getScenario(context: ScenarioContext): Promise<ScenarioLoadResult> {
     const response = await fetch('/api/scenarios/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -28,10 +35,13 @@ export class ApiScenarioLoader {
     }
 
     return {
-      ...data.scenario,
-      createdAt: data.scenario.createdAt
-        ? new Date(data.scenario.createdAt)
-        : new Date(),
+      scenario: {
+        ...data.scenario,
+        createdAt: data.scenario.createdAt
+          ? new Date(data.scenario.createdAt)
+          : new Date(),
+      },
+      dev: data.dev,
     };
   }
 }

@@ -6,10 +6,20 @@ import { Scenario, ScenarioContext } from '../types';
 import { assertOpenAiConfigured, generateScenarioFromLlm } from './provider';
 import { processGeneratedScenario } from './validate-scenario';
 import { moderateScenarioContent } from './moderation';
+import { attachMenuImageUrls } from './resolve-menu-image-url';
+import type { LlmDevDebug } from '../types/llm-dev-debug';
+import { isDevLlmDebugEnabled } from '../types/llm-dev-debug';
 
 const MAX_GENERATION_ATTEMPTS = 4;
 
-export async function generateScenario(context: ScenarioContext): Promise<Scenario> {
+export interface GenerateScenarioOutput {
+  scenario: Scenario;
+  dev?: LlmDevDebug;
+}
+
+export async function generateScenario(
+  context: ScenarioContext
+): Promise<GenerateScenarioOutput> {
   assertOpenAiConfigured();
 
   let lastError = 'Unknown error';
@@ -19,11 +29,11 @@ export async function generateScenario(context: ScenarioContext): Promise<Scenar
     const strict = attempt >= 2;
 
     try {
-      const { raw } = await generateScenarioFromLlm(context, {
+      const llmResult = await generateScenarioFromLlm(context, {
         strict,
         validationError: lastValidationError,
       });
-      const processed = processGeneratedScenario(raw, context);
+      const processed = processGeneratedScenario(llmResult.raw, context);
 
       if (!processed.ok) {
         lastError = processed.error;
@@ -50,7 +60,22 @@ export async function generateScenario(context: ScenarioContext): Promise<Scenar
         continue;
       }
 
-      return processed.scenario;
+      const { scenario, menuImageDebug } = await attachMenuImageUrls(processed.scenario);
+
+      const dev: LlmDevDebug | undefined = isDevLlmDebugEnabled()
+        ? {
+            capturedAt: new Date().toISOString(),
+            scenarioGeneration: {
+              model: llmResult.model,
+              attempt: attempt + 1,
+              rawParsed: llmResult.raw,
+              chatCompletionResponse: llmResult.chatCompletionResponse,
+            },
+            menuImageSearch: menuImageDebug,
+          }
+        : undefined;
+
+      return { scenario, dev };
     } catch (err) {
       lastError = err instanceof Error ? err.message : String(err);
       console.error(
