@@ -34,6 +34,12 @@ export interface SignatureDishDevEntry {
   };
   httpStatus: number;
   response: unknown;
+  moderation?: {
+    provider?: string;
+    labels?: string[];
+    scores?: Record<string, number>;
+    raw?: unknown;
+  };
 }
 
 /** Replace data: URLs with a short preview for dev-panel display/copy. */

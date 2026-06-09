@@ -5,7 +5,7 @@ import type { SignatureDishDevEntry } from '@/lib/types/llm-dev-debug';
 
 export const SIGNATURE_DISH_MAX_LENGTH = 200;
 
-export type SignatureDishStatus = 'generating' | 'ready' | 'error';
+export type SignatureDishStatus = 'generating' | 'ready' | 'blocked' | 'error';
 
 export interface SignatureDishRecord {
   turn: number;
@@ -69,9 +69,16 @@ export function useSignatureDish(currentTurn: number) {
           success?: boolean;
           imageUrl?: string;
           error?: string;
+          errorCode?: string;
+          moderation?: { provider?: string; labels?: string[] };
+          dev?: { moderation?: unknown };
         };
 
         if (process.env.NODE_ENV === 'development') {
+          const moderationDev = data.dev?.moderation as
+            | { provider?: string; labels?: string[]; scores?: Record<string, number> }
+            | undefined;
+
           setDevLog((prev) => [
             {
               capturedAt: new Date().toISOString(),
@@ -80,6 +87,19 @@ export function useSignatureDish(currentTurn: number) {
               request,
               httpStatus: response.status,
               response: data,
+              moderation: moderationDev
+                ? {
+                    provider: moderationDev.provider ?? data.moderation?.provider,
+                    labels: moderationDev.labels ?? data.moderation?.labels,
+                    scores: moderationDev.scores,
+                    raw: moderationDev,
+                  }
+                : data.moderation
+                  ? {
+                      provider: data.moderation.provider,
+                      labels: data.moderation.labels,
+                    }
+                  : undefined,
             },
             ...prev,
           ]);
@@ -87,12 +107,20 @@ export function useSignatureDish(currentTurn: number) {
 
         if (generation !== requestGenerationRef.current) return;
 
+        const isBlocked =
+          response.status === 422 && data.errorCode === 'content_moderation';
+
         setRecords((prev) =>
           prev.map((r) =>
             r.turn === turn
               ? {
                   ...r,
-                  status: response.ok && data.success && data.imageUrl ? 'ready' : 'error',
+                  status:
+                    response.ok && data.success && data.imageUrl
+                      ? 'ready'
+                      : isBlocked
+                        ? 'blocked'
+                        : 'error',
                   imageUrl: data.imageUrl,
                   error:
                     response.ok && data.success

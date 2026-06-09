@@ -9,6 +9,10 @@ import {
   isSignatureDishImagesEnabled,
 } from '@/lib/ai/generate-signature-dish-image';
 import { checkRateLimit, getRateLimitKey } from '@/lib/ai/rate-limit';
+import {
+  moderateText,
+  MODERATION_BLOCKED_USER_MESSAGE,
+} from '@/lib/moderation';
 
 const BodySchema = z.object({
   description: z.string().trim().min(1).max(200),
@@ -48,6 +52,28 @@ export async function POST(request: Request) {
       );
     }
 
+    const moderation = await moderateText(body.data.description);
+
+    if (!moderation.allowed) {
+      const payload: Record<string, unknown> = {
+        success: false,
+        error: MODERATION_BLOCKED_USER_MESSAGE,
+        errorCode: 'content_moderation',
+        moderation: {
+          provider: moderation.provider,
+          labels: moderation.labels,
+        },
+      };
+
+      if (process.env.NODE_ENV === 'development') {
+        payload.dev = {
+          moderation,
+        };
+      }
+
+      return Response.json(payload, { status: 422 });
+    }
+
     const result = await generateSignatureDishImage(body.data.description);
 
     if (!result.ok) {
@@ -83,7 +109,12 @@ export async function POST(request: Request) {
       imageUrl: result.imageUrl,
       turn: body.data.turn,
       description: body.data.description,
-      ...(process.env.NODE_ENV === 'development' && { dev: { model: result.model } }),
+      ...(process.env.NODE_ENV === 'development' && {
+        dev: {
+          model: result.model,
+          moderation,
+        },
+      }),
     });
   } catch (error) {
     const message =

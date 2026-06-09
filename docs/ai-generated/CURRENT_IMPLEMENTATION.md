@@ -1,6 +1,6 @@
 # Food Truck Manager — Current Implementation
 
-**Last updated:** 2026-05-17  
+**Last updated:** 2026-06-06  
 **Source of truth:** `food-truck-manager/web/src/` (design docs may lag; prefer this file for behaviour)
 
 ## Overview
@@ -97,14 +97,42 @@ OPENAI_API_KEY=          # required
 OPENAI_MODEL=            # default gpt-4o-mini
 ```
 
+## Signature Dish + text moderation
+
+- **Panel:** `SignatureDishPanel.tsx` + `useSignatureDish.ts` — optional free-text dish per day
+- **Gate:** `POST /api/signature-dish/generate` calls `moderateText()` before image generation
+- **Providers:** rules blocklist → Hugging Face Inference API (default) → OpenAI fallback
+- **Blocked UX:** `status: 'blocked'` with family-friendly copy; dev panel logs scores
+- **Training lane:** `ml/text-moderation/` (Kaggle notebooks → Hugging Face Hub)
+- See [`TEXT_MODERATION.md`](./TEXT_MODERATION.md) and [`SIGNATURE_DISH.md`](./SIGNATURE_DISH.md)
+
 ## Key files
 
 | Area | Files |
 |------|--------|
-| UI | `TurnDecisionCard.tsx`, `MenuFeedbackBanner.tsx`, `GameBoard.tsx`, `page.tsx` |
-| State | `hooks/useGame.ts`, `lib/engine/game-state.ts` |
+| UI | `TurnDecisionCard.tsx`, `MenuFeedbackBanner.tsx`, `GameBoard.tsx`, `page.tsx`, `SignatureDishPanel.tsx` |
+| State | `hooks/useGame.ts`, `hooks/useSignatureDish.ts`, `lib/engine/game-state.ts` |
 | AI | `lib/ai/prompts.ts`, `generate-scenario.ts`, `validate-scenario.ts`, `ai-schemas.ts` |
+| Moderation | `lib/moderation/moderate-text.ts`, `providers/huggingface.ts`, `providers/rules.ts` |
 | Images | `resolve-menu-image-url.ts`, `MenuSpecialImage.tsx`, `MENU_IMAGES.md` |
+
+## Tests
+
+Vitest unit tests live next to the modules they cover (`web/src/**/*.test.ts`).
+
+```bash
+cd web && npm test        # single run
+cd web && npm run test:watch
+```
+
+| Area | File |
+|------|------|
+| Game engine | `lib/engine/game-state.test.ts` |
+| Menu scoring | `lib/game-utils/menu-scoring.test.ts` |
+| Helpers | `lib/game-utils/helpers.test.ts` |
+| AI schemas / validation | `lib/types/ai-schemas.test.ts`, `lib/ai/validate-scenario.test.ts` |
+| Text moderation | `lib/moderation/moderate-text.test.ts`, `providers/*.test.ts`, `api/signature-dish/generate/route.test.ts` |
+| Shared fixtures | `src/test/fixtures.ts` |
 
 ## Git / deploy
 

@@ -49,6 +49,22 @@ function DishImage({
     );
   }
 
+  if (record.status === "blocked") {
+    return (
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-amber-200 bg-amber-50/80 aspect-square p-3 text-center",
+          className,
+        )}
+      >
+        <UtensilsCrossed className="h-8 w-8 text-amber-500" />
+        <p className="text-[10px] font-medium text-amber-800 leading-snug">
+          {record.error ?? "That description doesn't fit our kitchen."}
+        </p>
+      </div>
+    );
+  }
+
   if (record.status === "error") {
     return (
       <div

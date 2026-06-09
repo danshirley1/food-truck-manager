@@ -119,13 +119,22 @@ export function DevLlmDebugPanel({
               )}
 
               {signatureDishDebug.map((entry, index) => (
-                <DebugSection
-                  key={`${entry.capturedAt}-${entry.turn}-${index}`}
-                  title={`Signature dish — "${entry.description.slice(0, 48)}${
-                    entry.description.length > 48 ? '…' : ''
-                  }"`}
-                  data={entry}
-                />
+                <div key={`${entry.capturedAt}-${entry.turn}-${index}`}>
+                  <DebugSection
+                    title={`Signature dish — "${entry.description.slice(0, 48)}${
+                      entry.description.length > 48 ? '…' : ''
+                    }"`}
+                    data={entry}
+                  />
+                  {entry.moderation ? (
+                    <DebugSection
+                      title={`Moderation — ${entry.description.slice(0, 32)}${
+                        entry.description.length > 32 ? '…' : ''
+                      }`}
+                      data={entry.moderation}
+                    />
+                  ) : null}
+                </div>
               ))}
             </>
           )}
