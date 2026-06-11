@@ -62,6 +62,7 @@ export async function POST(request: Request) {
         moderation: {
           provider: moderation.provider,
           labels: moderation.labels,
+          scores: moderation.scores,
         },
       };
 

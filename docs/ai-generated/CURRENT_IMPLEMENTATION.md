@@ -101,7 +101,7 @@ OPENAI_MODEL=            # default gpt-4o-mini
 
 - **Panel:** `SignatureDishPanel.tsx` + `useSignatureDish.ts` — optional free-text dish per day
 - **Gate:** `POST /api/signature-dish/generate` calls `moderateText()` before image generation
-- **Providers:** rules blocklist → Hugging Face Inference API (default) → OpenAI fallback
+- **Providers:** empty-text check → Hugging Face Inference API (default) → OpenAI fallback
 - **Blocked UX:** `status: 'blocked'` with family-friendly copy; dev panel logs scores
 - **Training lane:** `ml/text-moderation/` (Kaggle notebooks → Hugging Face Hub)
 - See [`TEXT_MODERATION.md`](./TEXT_MODERATION.md) and [`SIGNATURE_DISH.md`](./SIGNATURE_DISH.md)

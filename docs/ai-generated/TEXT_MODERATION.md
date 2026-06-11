@@ -24,7 +24,7 @@ sequenceDiagram
 
   UI->>API: description + turn
   API->>Mod: moderateText(description)
-  Mod->>Mod: rules blocklist
+  Mod->>Mod: empty-text check
   Mod->>HF: classification (if configured)
   alt blocked
     Mod-->>API: allowed false
@@ -44,7 +44,7 @@ web/src/lib/moderation/
   config.ts
   moderate-text.ts      # public entry
   providers/
-    rules.ts            # local blocklist (first pass)
+    rules.ts            # empty-text validation (first pass)
     huggingface.ts      # HF Inference API (primary)
     openai.ts           # optional fallback
   index.ts
@@ -52,7 +52,7 @@ web/src/lib/moderation/
 
 ## Provider order
 
-1. **Rules** — empty text, obvious slurs (always when enabled)
+1. **Rules** — reject empty/whitespace-only text (always when enabled)
 2. **Primary** — `TEXT_MODERATION_PROVIDER` (`huggingface` or `openai`)
 3. **Fallback** — the other remote provider if primary fails
 4. **Fail-open** — if no provider is reachable, allow (log warning)
@@ -64,10 +64,13 @@ When a provider returns a confident **block**, the request fails closed with HTT
 ```bash
 TEXT_MODERATION_ENABLED=true
 TEXT_MODERATION_PROVIDER=huggingface   # huggingface | openai | rules-only
-HUGGINGFACE_API_KEY=
+HUGGINGFACE_API_KEY=                   # User Access Token with "Inference Providers" permission
 HUGGINGFACE_MODERATION_MODEL=unitary/unbiased-toxic-roberta
+# HUGGINGFACE_INFERENCE_BASE_URL=https://router.huggingface.co/hf-inference
 TEXT_MODERATION_THRESHOLD=0.5
 ```
+
+Runtime calls `https://router.huggingface.co/hf-inference/models/{model}` — **not** the retired `api-inference.huggingface.co` hostname.
 
 Swap `HUGGINGFACE_MODERATION_MODEL` to your fine-tuned Hub repo after Kaggle training — no code change.
 

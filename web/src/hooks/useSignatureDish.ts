@@ -13,6 +13,8 @@ export interface SignatureDishRecord {
   status: SignatureDishStatus;
   imageUrl?: string;
   error?: string;
+  moderationLabels?: string[];
+  moderationScores?: Record<string, number>;
 }
 
 export function useSignatureDish(currentTurn: number) {
@@ -43,6 +45,13 @@ export function useSignatureDish(currentTurn: number) {
     setRecords((prev) => prev.filter((r) => r.turn !== currentTurn));
   }, [currentTurn]);
 
+  const editCurrent = useCallback(() => {
+    const description = records.find((r) => r.turn === currentTurn)?.description;
+    requestGenerationRef.current += 1;
+    setDraft(description ?? '');
+    setRecords((prev) => prev.filter((r) => r.turn !== currentTurn));
+  }, [currentTurn, records]);
+
   const submit = useCallback(() => {
     const description = draft.trim();
     if (!description || description.length > SIGNATURE_DISH_MAX_LENGTH) return;
@@ -70,7 +79,11 @@ export function useSignatureDish(currentTurn: number) {
           imageUrl?: string;
           error?: string;
           errorCode?: string;
-          moderation?: { provider?: string; labels?: string[] };
+          moderation?: {
+            provider?: string;
+            labels?: string[];
+            scores?: Record<string, number>;
+          };
           dev?: { moderation?: unknown };
         };
 
@@ -126,6 +139,8 @@ export function useSignatureDish(currentTurn: number) {
                     response.ok && data.success
                       ? undefined
                       : (data.error ?? `Request failed (${response.status})`),
+                  moderationLabels: isBlocked ? data.moderation?.labels : undefined,
+                  moderationScores: isBlocked ? data.moderation?.scores : undefined,
                 }
               : r
           )
@@ -175,6 +190,7 @@ export function useSignatureDish(currentTurn: number) {
     submit,
     reset,
     clearCurrent,
+    editCurrent,
     canSubmit,
     currentRecord,
     history,

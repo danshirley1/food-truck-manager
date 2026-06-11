@@ -10,13 +10,8 @@ describe('moderateWithRules', () => {
     }
   });
 
-  it('blocks obvious profanity', () => {
-    const result = moderateWithRules('fuck this burrito');
-    expect(result?.allowed).toBe(false);
-    expect(result?.provider).toBe('rules');
-  });
-
-  it('returns null for clean creative food text', () => {
+  it('returns null for non-empty text so ML providers can run', () => {
     expect(moderateWithRules('galaxy glitter ramen')).toBeNull();
+    expect(moderateWithRules('fuck this burrito')).toBeNull();
   });
 });

@@ -21,9 +21,56 @@ interface SignatureDishPanelProps {
   onDraftChange: (value: string) => void;
   onSubmit: () => void;
   onClearCurrent: () => void;
+  onEditCurrent?: () => void;
   canSubmit: boolean;
   currentRecord?: SignatureDishRecord;
   history: SignatureDishRecord[];
+}
+
+function formatModerationScore(score: number): string {
+  return `${Math.round(score * 1000) / 10}%`;
+}
+
+function ModerationLabelScores({
+  labels,
+  scores,
+}: {
+  labels?: string[];
+  scores?: Record<string, number>;
+}) {
+  if (!labels?.length && !scores) return null;
+
+  const entries =
+    labels?.length && scores
+      ? labels
+          .map((label) => ({ label, score: scores[label] ?? scores[label.toLowerCase()] }))
+          .filter((entry): entry is { label: string; score: number } => entry.score != null)
+          .sort((a, b) => b.score - a.score)
+      : labels?.length
+        ? labels.map((label) => ({ label, score: undefined as number | undefined }))
+        : Object.entries(scores ?? {})
+            .sort(([, a], [, b]) => b - a)
+            .map(([label, score]) => ({ label, score }));
+
+  if (entries.length === 0) return null;
+
+  return (
+    <ul className="mt-2 w-full space-y-0.5 text-left">
+      {entries.map(({ label, score }) => (
+        <li
+          key={label}
+          className="flex items-baseline justify-between gap-2 text-[12px] text-amber-900/90"
+        >
+          <span className="truncate capitalize">{label.replace(/_/g, " ")}</span>
+          {score != null ? (
+            <span className="shrink-0 tabular-nums font-medium">
+              {formatModerationScore(score)}
+            </span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 function DishImage({
@@ -53,14 +100,18 @@ function DishImage({
     return (
       <div
         className={cn(
-          "flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-amber-200 bg-amber-50/80 aspect-square p-3 text-center",
+          "flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-amber-200 bg-amber-50/80 min-h-[140px] p-3 text-center",
           className,
         )}
       >
-        <UtensilsCrossed className="h-8 w-8 text-amber-500" />
-        <p className="text-[10px] font-medium text-amber-800 leading-snug">
+        <UtensilsCrossed className="h-8 w-8 shrink-0 text-amber-500" />
+        <p className="text-[12px] font-medium text-amber-800 leading-snug">
           {record.error ?? "That description doesn't fit our kitchen."}
         </p>
+        <ModerationLabelScores
+          labels={record.moderationLabels}
+          scores={record.moderationScores}
+        />
       </div>
     );
   }
@@ -106,6 +157,7 @@ export function SignatureDishPanel({
   onDraftChange,
   onSubmit,
   onClearCurrent,
+  onEditCurrent,
   canSubmit,
   currentRecord,
   history,
@@ -204,7 +256,17 @@ export function SignatureDishPanel({
         )}
 
         {currentRecord && (
-          <div className="border-t border-violet-100 pt-4">
+          <div className="space-y-2 border-t border-violet-100 pt-4">
+            {currentRecord.status === "blocked" && onEditCurrent ? (
+              <Button
+                type="button"
+                size="sm"
+                className="w-full bg-amber-600 hover:bg-amber-700"
+                onClick={onEditCurrent}
+              >
+                Edit description
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="outline"

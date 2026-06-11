@@ -88,6 +88,11 @@ export function evaluateClassification(
   return { allowed: true, provider: 'huggingface', scores };
 }
 
+/** HF Inference Providers base URL (legacy api-inference.huggingface.co was decommissioned). */
+const HF_INFERENCE_BASE =
+  process.env.HUGGINGFACE_INFERENCE_BASE_URL ??
+  'https://router.huggingface.co/hf-inference';
+
 export async function moderateWithHuggingFace(
   text: string,
   config: ModerationConfig
@@ -97,7 +102,7 @@ export async function moderateWithHuggingFace(
   }
 
   const model = encodeURIComponent(config.huggingFaceModel);
-  const url = `https://api-inference.huggingface.co/models/${model}`;
+  const url = `${HF_INFERENCE_BASE}/models/${model}`;
 
   try {
     const response = await fetch(url, {

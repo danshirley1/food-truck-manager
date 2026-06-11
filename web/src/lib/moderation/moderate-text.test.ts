@@ -21,12 +21,22 @@ describe('moderateText', () => {
     expect(result.allowed).toBe(true);
   });
 
-  it('blocks via rules without calling remote APIs', async () => {
+  it('blocks empty text via rules without calling remote APIs', async () => {
     process.env.TEXT_MODERATION_ENABLED = 'true';
     process.env.TEXT_MODERATION_PROVIDER = 'rules-only';
 
-    const result = await moderateText('fuck this burrito');
+    const result = await moderateText('   ');
     expect(result.allowed).toBe(false);
+    expect(result.provider).toBe('rules');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('allows non-empty text in rules-only mode without remote APIs', async () => {
+    process.env.TEXT_MODERATION_ENABLED = 'true';
+    process.env.TEXT_MODERATION_PROVIDER = 'rules-only';
+
+    const result = await moderateText('galaxy glitter ramen');
+    expect(result.allowed).toBe(true);
     expect(result.provider).toBe('rules');
     expect(fetch).not.toHaveBeenCalled();
   });

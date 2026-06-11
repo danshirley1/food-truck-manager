@@ -147,6 +147,7 @@ export default function Home() {
               onDraftChange={signatureDish.setDraft}
               onSubmit={signatureDish.submit}
               onClearCurrent={signatureDish.clearCurrent}
+              onEditCurrent={signatureDish.editCurrent}
               canSubmit={signatureDish.canSubmit}
               currentRecord={signatureDish.currentRecord}
               history={signatureDish.history}
