@@ -27,52 +27,6 @@ interface SignatureDishPanelProps {
   history: SignatureDishRecord[];
 }
 
-function formatModerationScore(score: number): string {
-  return `${Math.round(score * 1000) / 10}%`;
-}
-
-function ModerationLabelScores({
-  labels,
-  scores,
-}: {
-  labels?: string[];
-  scores?: Record<string, number>;
-}) {
-  if (!labels?.length && !scores) return null;
-
-  const entries =
-    labels?.length && scores
-      ? labels
-          .map((label) => ({ label, score: scores[label] ?? scores[label.toLowerCase()] }))
-          .filter((entry): entry is { label: string; score: number } => entry.score != null)
-          .sort((a, b) => b.score - a.score)
-      : labels?.length
-        ? labels.map((label) => ({ label, score: undefined as number | undefined }))
-        : Object.entries(scores ?? {})
-            .sort(([, a], [, b]) => b - a)
-            .map(([label, score]) => ({ label, score }));
-
-  if (entries.length === 0) return null;
-
-  return (
-    <ul className="mt-2 w-full space-y-0.5 text-left">
-      {entries.map(({ label, score }) => (
-        <li
-          key={label}
-          className="flex items-baseline justify-between gap-2 text-[12px] text-amber-900/90"
-        >
-          <span className="truncate capitalize">{label.replace(/_/g, " ")}</span>
-          {score != null ? (
-            <span className="shrink-0 tabular-nums font-medium">
-              {formatModerationScore(score)}
-            </span>
-          ) : null}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 function DishImage({
   record,
   className,
@@ -108,10 +62,6 @@ function DishImage({
         <p className="text-[12px] font-medium text-amber-800 leading-snug">
           {record.error ?? "That description doesn't fit our kitchen."}
         </p>
-        <ModerationLabelScores
-          labels={record.moderationLabels}
-          scores={record.moderationScores}
-        />
       </div>
     );
   }

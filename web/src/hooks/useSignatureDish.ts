@@ -13,8 +13,6 @@ export interface SignatureDishRecord {
   status: SignatureDishStatus;
   imageUrl?: string;
   error?: string;
-  moderationLabels?: string[];
-  moderationScores?: Record<string, number>;
 }
 
 export function useSignatureDish(currentTurn: number) {
@@ -139,8 +137,6 @@ export function useSignatureDish(currentTurn: number) {
                     response.ok && data.success
                       ? undefined
                       : (data.error ?? `Request failed (${response.status})`),
-                  moderationLabels: isBlocked ? data.moderation?.labels : undefined,
-                  moderationScores: isBlocked ? data.moderation?.scores : undefined,
                 }
               : r
           )
