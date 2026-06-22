@@ -54,7 +54,26 @@ SKIP_SUBSTRINGS = (
     "autoerotic",
 )
 
-FOOD_SUFFIXES = ("sandwich", "taco", "burger", "bowl", "wrap", "platter", "special", "deluxe")
+FOOD_SUFFIXES = (
+    "sandwich",
+    "taco",
+    "burger",
+    "bowl",
+    "wrap",
+    "platter",
+    "special",
+    "deluxe",
+    "salad",   # was missing — model saw many allowed *salad rows
+    "soup",
+    "fries",
+    "ramen",
+    "wings",
+    "burrito",
+    "pasta",
+    "pie",
+    "cake",
+    "noodles",
+)
 
 SINGLE_WORD_RE = re.compile(r"^[a-z][a-z'-]{2,24}$")
 

@@ -76,6 +76,8 @@ spic taco for mexicans,blocked,slur
 retard sandwich special,blocked,slur
 autistic freak fries,blocked,ableist slur
 fuck rice,blocked,profanity in mild food context
+fuck salad,blocked,profanity + salad (was passing on old model)
+fucking salad,blocked,profanity + salad
 fucking rice,blocked,profanity in mild food context
 fucking pasta,blocked,profanity in mild food context
 fuck off fries,blocked,profanity dish name

@@ -1,9 +1,30 @@
 import { getModerationConfig } from './config';
-import { moderateWithHuggingFace } from './providers/huggingface';
+import {
+  moderateProfanityWithHuggingFace,
+  moderateWithHuggingFace,
+} from './providers/huggingface';
 import { moderateWithLocalModel } from './providers/local-model';
 import { moderateWithOpenAi } from './providers/openai';
 import { moderateWithRules } from './providers/rules';
-import type { ModerationResult } from './types';
+import type { ModerationConfig, ModerationResult } from './types';
+
+/** If the game model allows, run a general profanity model (obscene/insult — any phrasing). */
+async function applyProfanityPass(
+  text: string,
+  config: ModerationConfig,
+  gameResult: ModerationResult
+): Promise<ModerationResult> {
+  if (!gameResult.allowed || !config.profanityCheckEnabled) {
+    return gameResult;
+  }
+
+  const profanity = await moderateProfanityWithHuggingFace(text, config);
+  if (profanity && !profanity.allowed) {
+    return profanity;
+  }
+
+  return gameResult;
+}
 
 export async function moderateText(text: string): Promise<ModerationResult> {
   const config = getModerationConfig();
@@ -29,7 +50,7 @@ export async function moderateText(text: string): Promise<ModerationResult> {
         : await moderateWithHuggingFace(text, config);
 
   if (primary) {
-    return primary;
+    return applyProfanityPass(text, config, primary);
   }
 
   const fallback =
@@ -43,7 +64,7 @@ export async function moderateText(text: string): Promise<ModerationResult> {
           : await moderateWithOpenAi(text, config);
 
   if (fallback) {
-    return fallback;
+    return applyProfanityPass(text, config, fallback);
   }
 
   console.warn(

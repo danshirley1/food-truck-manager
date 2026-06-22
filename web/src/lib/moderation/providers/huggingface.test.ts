@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateClassification } from './huggingface';
+import { evaluateClassification, evaluateProfanityLabels } from './huggingface';
 
 describe('evaluateClassification', () => {
   it('blocks when toxic label exceeds threshold', () => {
@@ -76,6 +76,37 @@ describe('evaluateClassification', () => {
         { label: 'obscene', score: 0.2 },
       ],
       0.5
+    );
+
+    expect(result.allowed).toBe(true);
+  });
+});
+
+describe('evaluateProfanityLabels', () => {
+  it('blocks on obscene score even when overall toxic is low', () => {
+    const result = evaluateProfanityLabels(
+      [
+        { label: 'obscene', score: 0.91 },
+        { label: 'toxic', score: 0.2 },
+        { label: 'insult', score: 0.1 },
+      ],
+      0.45
+    );
+
+    expect(result.allowed).toBe(false);
+    if (!result.allowed) {
+      expect(result.labels).toContain('obscene');
+    }
+  });
+
+  it('allows gross food when only toxic is elevated (not obscene/insult)', () => {
+    const result = evaluateProfanityLabels(
+      [
+        { label: 'toxic', score: 0.75 },
+        { label: 'obscene', score: 0.08 },
+        { label: 'insult', score: 0.05 },
+      ],
+      0.45
     );
 
     expect(result.allowed).toBe(true);

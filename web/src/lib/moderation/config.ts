@@ -16,6 +16,10 @@ export function getModerationConfig(): ModerationConfig {
     huggingFaceModel:
       process.env.HUGGINGFACE_MODERATION_MODEL ?? 'dshirls/food-truck-moderation-v1',
     huggingFaceInferenceEndpoint: process.env.HUGGINGFACE_INFERENCE_ENDPOINT,
+    profanityCheckEnabled: process.env.TEXT_MODERATION_PROFANITY_CHECK !== 'false',
+    profanityModel:
+      process.env.TEXT_MODERATION_PROFANITY_MODEL ?? 'unitary/unbiased-toxic-roberta',
+    profanityThreshold: parseFloat(process.env.TEXT_MODERATION_PROFANITY_THRESHOLD ?? '0.45'),
     openAiApiKey: process.env.OPENAI_API_KEY,
     localModelPath: process.env.LOCAL_MODERATION_MODEL_PATH,
   };

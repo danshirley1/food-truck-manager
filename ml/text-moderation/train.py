@@ -237,6 +237,7 @@ def main() -> None:
             "a cake made of cockroaches",
             "fuck you cake",
             "fuck rice",
+            "fuck salad",
             "fucking rice",
             "cunt sandwich",
             "cunt curry bowl",

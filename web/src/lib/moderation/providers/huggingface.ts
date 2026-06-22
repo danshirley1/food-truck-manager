@@ -115,29 +115,43 @@ export function evaluateClassification(
   return { allowed: true, provider: 'huggingface', scores };
 }
 
+/** Pre-trained multi-label models: block only obscene/insult (not overall toxic — gross food stays allowed). */
+export function evaluateProfanityLabels(
+  items: HfClassificationItem[],
+  threshold: number,
+  labelNames: string[] = ['obscene', 'insult']
+): ModerationResult {
+  const scores = parseScores(items);
+  const hits = labelNames.filter((name) => (scores[name.toLowerCase()] ?? 0) >= threshold);
+
+  if (hits.length > 0) {
+    return {
+      allowed: false,
+      provider: 'profanity-model',
+      reason: `Profanity model flagged content (${hits.join(', ')})`,
+      labels: hits,
+      scores,
+    };
+  }
+
+  return { allowed: true, provider: 'profanity-model', scores };
+}
+
 /** HF Inference Providers base URL (legacy api-inference.huggingface.co was decommissioned). */
 const HF_INFERENCE_BASE =
   process.env.HUGGINGFACE_INFERENCE_BASE_URL ??
   'https://router.huggingface.co/hf-inference';
 
-export async function moderateWithHuggingFace(
+async function fetchHfClassification(
   text: string,
-  config: ModerationConfig
-): Promise<ModerationResult | null> {
-  if (!config.huggingFaceApiKey) {
-    return null;
-  }
-
-  // Custom models are NOT on the hf-inference catalog — use a dedicated Inference Endpoint URL
-  const url = config.huggingFaceInferenceEndpoint
-    ? config.huggingFaceInferenceEndpoint.replace(/\/$/, '')
-    : `${HF_INFERENCE_BASE}/models/${encodeURIComponent(config.huggingFaceModel)}`;
-
+  apiKey: string,
+  url: string
+): Promise<HfClassificationItem[] | null> {
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${config.huggingFaceApiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ inputs: text }),
@@ -147,12 +161,11 @@ export async function moderateWithHuggingFace(
       const body = await response.text().catch(() => '');
       if (body.includes('not supported by provider hf-inference')) {
         console.warn(
-          '[moderation:huggingface] Custom models are not on the hf-inference catalog. ' +
-            'Use TEXT_MODERATION_PROVIDER=local-model locally, or deploy an Inference Endpoint ' +
-            'and set HUGGINGFACE_INFERENCE_ENDPOINT. See docs/ai-generated/TEXT_MODERATION.md'
+          '[moderation:huggingface] Model not on hf-inference catalog. ' +
+            'Use a dedicated Inference Endpoint or TEXT_MODERATION_PROVIDER=local-model.'
         );
       } else {
-        console.warn('[moderation:huggingface] API error:', response.status, body);
+        console.warn('[moderation:huggingface] API error:', response.status, body.slice(0, 200));
       }
       return null;
     }
@@ -161,13 +174,48 @@ export async function moderateWithHuggingFace(
       | HfClassificationItem[]
       | HfClassificationItem[][];
 
-    const items = Array.isArray(data[0])
+    return Array.isArray(data[0])
       ? (data as HfClassificationItem[][])[0]
       : (data as HfClassificationItem[]);
-
-    return evaluateClassification(items, config.threshold);
   } catch (err) {
     console.warn('[moderation:huggingface] Request failed:', err);
     return null;
   }
+}
+
+export async function moderateProfanityWithHuggingFace(
+  text: string,
+  config: ModerationConfig
+): Promise<ModerationResult | null> {
+  if (!config.huggingFaceApiKey || !config.profanityCheckEnabled) {
+    return null;
+  }
+
+  const url = `${HF_INFERENCE_BASE}/models/${encodeURIComponent(config.profanityModel)}`;
+  const items = await fetchHfClassification(text, config.huggingFaceApiKey, url);
+  if (!items) {
+    return null;
+  }
+
+  return evaluateProfanityLabels(items, config.profanityThreshold);
+}
+
+export async function moderateWithHuggingFace(
+  text: string,
+  config: ModerationConfig
+): Promise<ModerationResult | null> {
+  if (!config.huggingFaceApiKey) {
+    return null;
+  }
+
+  const url = config.huggingFaceInferenceEndpoint
+    ? config.huggingFaceInferenceEndpoint.replace(/\/$/, '')
+    : `${HF_INFERENCE_BASE}/models/${encodeURIComponent(config.huggingFaceModel)}`;
+
+  const items = await fetchHfClassification(text, config.huggingFaceApiKey, url);
+  if (!items) {
+    return null;
+  }
+
+  return evaluateClassification(items, config.threshold);
 }

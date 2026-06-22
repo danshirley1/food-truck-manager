@@ -43,12 +43,15 @@ HUGGINGFACE_MODERATION_MODEL=dshirls/food-truck-moderation-v1
 
 With `local-model` primary and `huggingface` configured, the app **falls back to local** if the router rejects the model.
 
-## Flow
+## Flow (two-pass)
 
 1. Rules — reject empty text
-2. Primary provider (`huggingface` or `local-model`)
-3. Fallback — OpenAI moderation if primary unreachable
-4. Fail-open only if all providers down (logged)
+2. **Game model** (custom fine-tune) — gross/weird food **allowed**, hate/threats blocked
+3. **Profanity model** (pre-trained `unbiased-toxic-roberta` on HF catalog) — if game model allows, block on **obscene** or **insult** only (not overall `toxic`, so cockroach salad still passes)
+4. Fallback — local model / OpenAI if primary unreachable
+5. Fail-open only if all providers down (logged)
+
+You should **not** need every `fuck + {dish}` combo in training — the profanity pass generalises. The custom model’s job is game-specific allowance (gross food) and hate/threats in dish names.
 
 Block → HTTP 422 `content_moderation`. UI shows the family-friendly message + **Edit description**.
 
@@ -71,6 +74,9 @@ TEXT_MODERATION_PROVIDER=huggingface
 HUGGINGFACE_API_KEY=...                         # Write + Inference Providers
 HUGGINGFACE_MODERATION_MODEL=dshirls/food-truck-moderation-v1
 TEXT_MODERATION_THRESHOLD=0.5
+TEXT_MODERATION_PROFANITY_CHECK=true
+TEXT_MODERATION_PROFANITY_MODEL=unitary/unbiased-toxic-roberta
+TEXT_MODERATION_PROFANITY_THRESHOLD=0.45
 ```
 
 ## Module layout

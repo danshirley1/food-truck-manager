@@ -6,6 +6,7 @@ describe('moderateText', () => {
 
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
+    process.env.TEXT_MODERATION_PROFANITY_CHECK = 'false';
   });
 
   afterEach(() => {
@@ -93,5 +94,39 @@ describe('moderateText', () => {
 
     const result = await moderateText('galaxy ramen');
     expect(result.allowed).toBe(true);
+  });
+
+  it('blocks profanity via second pass when game model allows (e.g. fuck salad)', async () => {
+    process.env.TEXT_MODERATION_ENABLED = 'true';
+    process.env.TEXT_MODERATION_PROVIDER = 'huggingface';
+    process.env.HUGGINGFACE_API_KEY = 'hf_test';
+    process.env.HUGGINGFACE_INFERENCE_ENDPOINT = 'https://custom.endpoint.example';
+    process.env.TEXT_MODERATION_PROFANITY_CHECK = 'true';
+    process.env.TEXT_MODERATION_THRESHOLD = '0.5';
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          { label: 'allowed', score: 0.7 },
+          { label: 'blocked', score: 0.3 },
+        ],
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          { label: 'obscene', score: 0.92 },
+          { label: 'insult', score: 0.15 },
+          { label: 'toxic', score: 0.88 },
+        ],
+      } as Response);
+
+    const result = await moderateText('fuck salad');
+    expect(result.allowed).toBe(false);
+    if (!result.allowed) {
+      expect(result.provider).toBe('profanity-model');
+      expect(result.labels).toContain('obscene');
+    }
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 });

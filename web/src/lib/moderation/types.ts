@@ -1,4 +1,9 @@
-export type ModerationProviderName = 'rules' | 'huggingface' | 'openai' | 'local-model';
+export type ModerationProviderName =
+  | 'rules'
+  | 'huggingface'
+  | 'openai'
+  | 'local-model'
+  | 'profanity-model';
 
 export type ModerationAllowed = {
   allowed: true;
@@ -24,6 +29,10 @@ export type ModerationConfig = {
   huggingFaceModel: string;
   /** Dedicated Inference Endpoints URL (required for custom models on cloud) */
   huggingFaceInferenceEndpoint?: string;
+  /** Pre-trained catalog model — catches profanity in any phrasing (obscene/insult only). */
+  profanityCheckEnabled: boolean;
+  profanityModel: string;
+  profanityThreshold: number;
   openAiApiKey?: string;
   localModelPath?: string;
 };
