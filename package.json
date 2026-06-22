@@ -13,7 +13,9 @@
     "lint": "cd web && yarn lint",
     "test": "cd web && npm test",
     "heroku-postbuild": "cd web && npm install --include=dev && npm run build",
-    "deploy:heroku": "git push food-truck main:main"
+    "deploy:heroku": "git -c http.postBuffer=524288000 push food-truck main:main",
+    "deploy:check": "node scripts/deploy-preflight.mjs",
+    "deploy": "npm run deploy:check && npm test && npm run build && npm run deploy:heroku"
   },
   "keywords": [
     "food-truck",

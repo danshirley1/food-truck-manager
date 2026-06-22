@@ -15,6 +15,7 @@ export function getModerationConfig(): ModerationConfig {
     huggingFaceApiKey: process.env.HUGGINGFACE_API_KEY,
     huggingFaceModel:
       process.env.HUGGINGFACE_MODERATION_MODEL ?? 'dshirls/food-truck-moderation-v1',
+    huggingFaceInferenceEndpoint: process.env.HUGGINGFACE_INFERENCE_ENDPOINT,
     openAiApiKey: process.env.OPENAI_API_KEY,
     localModelPath: process.env.LOCAL_MODERATION_MODEL_PATH,
   };

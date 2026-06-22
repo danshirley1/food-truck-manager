@@ -1,122 +1,103 @@
 # Text Moderation
 
-**Last updated:** 2026-06-11
+**Last updated:** 2026-06-22
 
-User-authored Signature Dish descriptions are moderated server-side before OpenAI image generation runs.
+Gates **Signature Dish** free-text before OpenAI image generation. AI scenario text uses a separate OpenAI moderation path (`lib/ai/moderation.ts`).
 
-## Platform split
+## Model
 
-| Where | What |
-|-------|------|
-| **Kaggle + Python** | Train/evaluate — [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md), [`ml/text-moderation/`](../../ml/text-moderation/) |
-| **Hugging Face Hub** | Store model artifact; Inference API for runtime |
-| **Next.js (`web/`)** | `moderateText()` TypeScript interface + API gate |
+| | |
+|---|---|
+| **Hub repo** | [`dshirls/food-truck-moderation-v1`](https://huggingface.co/dshirls/food-truck-moderation-v1) |
+| **Labels** | `allowed`, `blocked` |
+| **Base** | Fine-tuned `distilbert-base-uncased` on 76-row game CSV |
+
+## How to run inference
+
+Custom models are **not** on the shared `hf-inference` catalog (`Model not supported by provider hf-inference` is expected).
+
+| Environment | Setup |
+|-------------|--------|
+| **Local demo** | `TEXT_MODERATION_PROVIDER=local-model` (Python daemon + `output/model`) |
+| **Heroku / cloud** | Deploy **Inference Endpoints** from model page → set `HUGGINGFACE_INFERENCE_ENDPOINT` |
+| **Curated HF models only** | `TEXT_MODERATION_PROVIDER=huggingface` without endpoint (e.g. `unitary/unbiased-toxic-roberta`) |
+
+### Local (recommended for demo today)
+
+```bash
+TEXT_MODERATION_PROVIDER=local-model
+HUGGINGFACE_MODERATION_MODEL=dshirls/food-truck-moderation-v1
+```
+
+### Cloud — Inference Endpoints
+
+1. Open [model page](https://huggingface.co/dshirls/food-truck-moderation-v1) → **Deploy** → **Inference Endpoints**
+2. Pick a **CPU** instance (DistilBERT is small)
+3. Copy endpoint URL into `web/.env`:
+
+```bash
+TEXT_MODERATION_PROVIDER=huggingface
+HUGGINGFACE_INFERENCE_ENDPOINT=https://xxxx.aws.endpoints.huggingface.cloud
+HUGGINGFACE_MODERATION_MODEL=dshirls/food-truck-moderation-v1
+```
+
+With `local-model` primary and `huggingface` configured, the app **falls back to local** if the router rejects the model.
 
 ## Flow
 
-```mermaid
-sequenceDiagram
-  participant UI as SignatureDishPanel
-  participant API as POST_signature_dish_generate
-  participant Mod as moderateText
-  participant HF as HuggingFace_Inference
-  participant Img as generateSignatureDishImage
+1. Rules — reject empty text
+2. Primary provider (`huggingface` or `local-model`)
+3. Fallback — OpenAI moderation if primary unreachable
+4. Fail-open only if all providers down (logged)
 
-  UI->>API: description + turn
-  API->>Mod: moderateText(description)
-  Mod->>Mod: empty-text check
-  Mod->>HF: classification (if configured)
-  alt blocked
-    Mod-->>API: allowed false
-    API-->>UI: 422 content_moderation
-  else allowed
-    Mod-->>API: allowed true
-    API->>Img: generate image
-    Img-->>UI: imageUrl
-  end
+Block → HTTP 422 `content_moderation`. UI shows labels/scores + **Edit description**.
+
+## Providers
+
+| Provider | When | How |
+|----------|------|-----|
+| `huggingface` | Production, Heroku | `router.huggingface.co/hf-inference/models/{model}` |
+| `local-model` | Local dev without Hub | Python daemon → `ml/text-moderation/output/model` |
+| `rules-only` | Testing | Empty-text check only |
+| `openai` | Optional fallback | OpenAI moderation API |
+
+Binary model evaluation: block only when `blocked` score ≥ `TEXT_MODERATION_THRESHOLD` (default 0.5).
+
+## Env
+
+```bash
+TEXT_MODERATION_ENABLED=true
+TEXT_MODERATION_PROVIDER=huggingface
+HUGGINGFACE_API_KEY=...                         # Write + Inference Providers
+HUGGINGFACE_MODERATION_MODEL=dshirls/food-truck-moderation-v1
+TEXT_MODERATION_THRESHOLD=0.5
 ```
 
 ## Module layout
 
 ```
 web/src/lib/moderation/
-  types.ts
+  moderate-text.ts          # entry
   config.ts
-  moderate-text.ts      # public entry
   providers/
-    rules.ts            # empty-text validation (first pass)
-    huggingface.ts      # HF Inference API (primary)
-    openai.ts           # optional fallback
-  index.ts
+    rules.ts
+    huggingface.ts          # Hub Inference + evaluateClassification
+    local-model.ts          # Python daemon
+    openai.ts
 ```
 
-## Provider order
+## ML lane
 
-1. **Rules** — reject empty/whitespace-only text (always when enabled)
-2. **Primary** — `TEXT_MODERATION_PROVIDER` (`huggingface` or `openai`)
-3. **Fallback** — the other remote provider if primary fails
-4. **Fail-open** — if no provider is reachable, allow (log warning)
-
-When a provider returns a confident **block**, the request fails closed with HTTP 422.
-
-## Env vars
-
-```bash
-TEXT_MODERATION_ENABLED=true
-TEXT_MODERATION_PROVIDER=huggingface   # huggingface | openai | rules-only
-HUGGINGFACE_API_KEY=                   # User Access Token with "Inference Providers" permission
-HUGGINGFACE_MODERATION_MODEL=unitary/unbiased-toxic-roberta
-# HUGGINGFACE_INFERENCE_BASE_URL=https://router.huggingface.co/hf-inference
-TEXT_MODERATION_THRESHOLD=0.5
+```
+ml/text-moderation/
+  datasets/signature-dish-samples.csv
+  train.py
+  push-to-hub.sh
+  infer.py / infer_daemon.py
 ```
 
-Runtime calls `https://router.huggingface.co/hf-inference/models/{model}` — **not** the retired `api-inference.huggingface.co` hostname.
-
-Swap `HUGGINGFACE_MODERATION_MODEL` to your fine-tuned Hub repo after Kaggle training — no code change.
-
-## API behaviour
-
-`POST /api/signature-dish/generate`
-
-- **422** `errorCode: content_moderation` — blocked; image generation skipped
-- **200** — moderation passed; image generated as before
-
-User-facing blocked copy: *"That description doesn't fit our family-friendly kitchen — try another dish idea."*
-
-## UI
-
-- `SignatureDishStatus`: `generating` | `ready` | `blocked` | `error`
-- **Blocked:** message + flagged labels/scores (12px); **Edit description** restores text to textarea
-- Dev panel: moderation JSON per request (development only)
-
-## Current vs custom model
-
-| | Pre-trained (now) | Your model (after training) |
-|--|-------------------|----------------------------|
-| Hub repo | `unitary/unbiased-toxic-roberta` | `YOUR_USER/food-truck-moderation-v1` |
-| Labels | toxicity, obscene, insult, … | **allowed**, **blocked** |
-| Fit for game | Approximate — false positives on gross food | Trained on your CSV |
-
-Train: [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md)
+See [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md).
 
 ## Tests
 
-```bash
-cd web && npm test
-```
-
-- `lib/moderation/moderate-text.test.ts`
-- `lib/moderation/providers/rules.test.ts`
-- `lib/moderation/providers/huggingface.test.ts`
-- `app/api/signature-dish/generate/route.test.ts`
-
-## Related docs
-
-- [`SIGNATURE_DISH.md`](./SIGNATURE_DISH.md) — Signature Dish feature
-- [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md) — train your own model
-- [`RESUME_HERE.md`](./RESUME_HERE.md) — status + checklist when returning
-- [`ml/text-moderation/README.md`](../../ml/text-moderation/README.md) — training script + CSV
-
-## Note on scenario moderation
-
-AI-generated scenario text still uses OpenAI Moderation in `web/src/lib/ai/moderation.ts`. This module is specifically for **user free-text** Signature Dish input.
+`cd web && npm test` — `moderate-text.test.ts`, `huggingface.test.ts`, `signature-dish/generate/route.test.ts`

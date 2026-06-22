@@ -1,138 +1,44 @@
-# Food Truck Manager - Game Rules
+# Game rules
 
-## Core Game Loop
+**Last updated:** 2026-06-22
 
-### Game Flow
-```
-Start Game → Generate Scenario → Present Choices → Apply Effects → Check End Conditions
-     ↑                                                                      ↓
-     └─────────────── Continue (if game not over) ←─────────────────────────┘
-```
+## Loop
 
-## Victory Conditions
+Start → generate scenario → business + menu choices → apply effects → check end → next day or game over.
 
-### Primary Win Condition
-**Survive 5 Turns**: Successfully navigate 5 days of food truck operation without hitting any failure states. (`TOTAL_TURNS` in `web/src/lib/types/core.ts`.)
+## Win / lose
 
-### Bonus Achievements
-- **Balanced Manager**: Never let any resource drop below 30
-- **Customer Favorite**: Maintain reputation above 70 for final 5 turns
-- **Profitable**: End with more than 200 money
-- **Energetic**: End with more than 70 energy
+| Outcome | Condition |
+|---------|-----------|
+| **Win** | Complete day 5 |
+| **Burnout** | Energy ≤ 0 |
+| **Reputation death** | Reputation ≤ 0 |
+| **Bankruptcy** | Money ≤ 0 |
 
-## Failure Conditions
+## Resources
 
-### Immediate Game Over
-1. **Burnout**: Energy drops to 0 or below
-2. **Reputation Death**: Reputation drops to 0 or below  
-3. **Bankruptcy**: Money drops to 0 or below
+| Resource | Range | Start |
+|----------|-------|-------|
+| Money | −999 … 999 | 100 |
+| Reputation | 0 … 100 | 50 |
+| Energy | 0 … 100 | 80 |
 
-### Failure Messaging
-Each failure state has specific narrative endings:
-- **Burnout**: "You collapse from exhaustion. The food truck dream will have to wait."
-- **Reputation Death**: "Word spreads about your poor service. No one comes to your truck anymore."
-- **Bankruptcy**: "You can't afford supplies or permits. Time to close down."
+Per-turn cap on combined business + menu deltas (`MAX_CUMULATIVE_TURN_DELTA` in `game-state.ts`).
 
-## Choice Mechanics
+## Choices
 
-### Choice Structure
-Each scenario presents 2-4 options with:
-- **Description**: Clear narrative of the action
-- **Visible Effects**: Preview of resource changes (e.g., "Money: -10, Reputation: +15")
-- **Effect badges**: Money, reputation, and energy deltas (each option must mix positive and negative effects)
-- **Risk level**: Stored in AI output for schema only; not shown to the player
+- Business: 2–4 options, each must mix positive and negative stat effects
+- Menu: exactly 3 options (A/B/C), distinct fit tiers for the crowd
+- `riskLevel` in AI schema — not shown to player
 
-### Effect Application
-```typescript
-// Simplified rule application
-function applyChoice(gameState: GameState, choice: Choice): GameState {
-  const newState = { ...gameState };
-  
-  // Apply effects with bounds checking
-  newState.money = clamp(newState.money + choice.effects.money, -999, 999);
-  newState.reputation = clamp(newState.reputation + choice.effects.reputation, 0, 100);
-  newState.energy = clamp(newState.energy + choice.effects.energy, 0, 100);
-  
-  // Increment turn
-  newState.turn += 1;
-  
-  // Check end conditions
-  newState.gameOver = checkEndConditions(newState);
-  
-  return newState;
-}
-```
+## Difficulty
 
-## Difficulty Progression
+| Phase | Days (5-day game) | Effect cap |
+|-------|-------------------|------------|
+| Early | 1–2 | ±10 |
+| Mid | 3–4 | ±15 |
+| Late | 5 | ±20 |
 
-### Early Game (Days 1–2)
-- **Stakes**: Lower caps (early ±10 per field)
-- **Scenarios**: Basic operations, simple customer interactions
-- **Focus**: Learning the ropes
+## Not in current build
 
-### Mid Game (Days 3–4)
-- **Stakes**: Mid caps (±15 per field)
-- **Scenarios**: Equipment, permits, competition
-- **Focus**: Tradeoffs and crisis management
-
-### Late Game (Day 5)
-- **Stakes**: Late caps (±20 per field)
-- **Scenarios**: High-stakes events, make-or-break choices
-- **Focus**: Closing out the run
-
-Bands are computed from `TOTAL_TURNS` in code (`EARLY_TURN_END`, `MID_TURN_END`).
-
-## Scenario Categories
-
-### Daily Operations
-- Customer service situations
-- Supply management
-- Equipment maintenance
-- Staff interactions (if hired)
-
-### External Events
-- Permit inspections
-- Weather challenges
-- Competition encounters
-- Community events
-
-### Crisis Management
-- Equipment failures
-- Health department visits
-- Difficult customers
-- Supply shortages
-
-## Scoring System
-
-### Base Score Calculation
-```
-Final Score = (Money × 0.4) + (Reputation × 0.8) + (Energy × 0.6) + Turn Bonus
-Turn Bonus = Turns Completed × 10
-```
-
-### Score Multipliers
-- **Balanced Finish**: All resources above 40 → ×1.2
-- **Excellence Finish**: All resources above 70 → ×1.5
-- **Perfect Run**: No resource below 50 at any point → ×1.3
-- **Achievement Bonuses**: +50 points per achievement unlocked
-
-### Leaderboard Categories
-- **Highest Score**: Traditional high score
-- **Best Balanced**: Highest minimum resource at game end
-- **Most Profitable**: Highest money total
-- **Customer Champion**: Highest reputation total
-
-## Game State Persistence
-
-### Session Data
-- Current resources (money, reputation, energy)
-- Turn number
-- Choice history (for replay/analysis)
-- Achievements unlocked
-- Random seed (for deterministic replays)
-
-### Cross-Session Data (Phase 2)
-- Best scores per category
-- Total games played
-- Favorite scenario types
-- Achievement collection
+Achievements, scoring leaderboard, save/load — design ideas only.

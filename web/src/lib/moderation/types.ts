@@ -22,6 +22,8 @@ export type ModerationConfig = {
   threshold: number;
   huggingFaceApiKey?: string;
   huggingFaceModel: string;
+  /** Dedicated Inference Endpoints URL (required for custom models on cloud) */
+  huggingFaceInferenceEndpoint?: string;
   openAiApiKey?: string;
   localModelPath?: string;
 };

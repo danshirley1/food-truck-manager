@@ -39,7 +39,7 @@ ml/
 - `yarn start` - Start production server
 - `yarn lint` - Run linter
 - `yarn clean` - Clean build artifacts
-- `npm test` (in `web/`) - Run unit tests (40 tests)
+- `npm test` (in `web/`) - Run unit tests (43 tests)
 
 ## 🚀 Deployment
 
@@ -48,10 +48,11 @@ ml/
 Live URL: https://food-truck-manager-8397e84e2f8b.herokuapp.com/
 
 ```bash
-npm run deploy:heroku
+npm run deploy          # test + build + push main to Heroku
+# or: npm run deploy:heroku   # push only
 ```
 
-This pushes the `feature/heroku-deployment` branch to the `food-truck` Heroku remote. Requires the remote to be set up:
+This pushes **`main`** to the `food-truck` Heroku remote:
 
 ```bash
 heroku git:remote -a food-truck-manager --remote food-truck
@@ -80,14 +81,14 @@ For Heroku, set the config var: `heroku config:set OPENAI_API_KEY=sk-... --app f
 User free-text is checked via **Hugging Face Inference** before image generation.
 
 ```bash
-# web/.env — in addition to OPENAI_API_KEY
 HUGGINGFACE_API_KEY=hf_...
-HUGGINGFACE_MODERATION_MODEL=unitary/unbiased-toxic-roberta
+HUGGINGFACE_MODERATION_MODEL=dshirls/food-truck-moderation-v1
 TEXT_MODERATION_ENABLED=true
+TEXT_MODERATION_PROVIDER=huggingface
 ```
 
-**Train your own model:** see `docs/ai-generated/HF_TRAINING_GUIDE.md`  
-**Resume later:** see `docs/ai-generated/RESUME_HERE.md`
+Custom fine-tuned model — see `docs/ai-generated/HF_TRAINING_GUIDE.md`  
+**Demo script:** `docs/ai-generated/DEMO_RUSH_GUIDE.md` · **Interview pitch:** `design_docs/food-truck-manager-design/INTERVIEW_TALKING_POINTS.md`
 
 ## 🎯 Game Rules
 
@@ -130,7 +131,9 @@ Next.js App (TypeScript + React)
 - **Train custom model:** `docs/ai-generated/HF_TRAINING_GUIDE.md`
 - **Signature Dish:** `docs/ai-generated/SIGNATURE_DISH.md`
 - **Menu images:** `docs/ai-generated/MENU_IMAGES.md`
-- **Design docs:** `design_docs/food-truck-manager-design/`
+- **Demo guide:** `docs/ai-generated/DEMO_RUSH_GUIDE.md`
+- **Interview talking points:** `design_docs/food-truck-manager-design/INTERVIEW_TALKING_POINTS.md`
+- **Design docs (concise):** `design_docs/food-truck-manager-design/`
 - **Env template:** `web/.env.example`
 
 ---

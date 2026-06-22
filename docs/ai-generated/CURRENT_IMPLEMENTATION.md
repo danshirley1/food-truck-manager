@@ -1,149 +1,83 @@
 # Food Truck Manager — Current Implementation
 
-**Last updated:** 2026-06-11  
-**Source of truth:** `food-truck-manager/web/src/` (design docs may lag; prefer this file for behaviour)
+**Last updated:** 2026-06-22  
+**Source of truth:** `web/src/` (prefer this over design docs for behaviour)
 
-## Overview
+## Stack
 
-Single Next.js 15 app (`web/`) with AI-generated scenarios and optional menu images. No separate `shared` package — game logic lives under `web/src/lib/`.
+Single **Next.js 15** app (`web/`). React 19, TypeScript, Tailwind v4, Zod. Game logic in `web/src/lib/`. No separate backend, DB, or auth in the shipped demo.
 
-## Game length and turns
+## Game
 
-| Constant | Value | Location |
-|----------|-------|----------|
-| `TOTAL_TURNS` | **5** | `web/src/lib/types/core.ts` |
+| | |
+|---|---|
+| Length | **5 days** (`TOTAL_TURNS` in `web/src/lib/types/core.ts`) |
+| Resources | Money −999…999, reputation 0–100, energy 0–100 |
+| Win | Complete day 5 |
+| Lose | Money ≤ 0, reputation ≤ 0, or energy ≤ 0 |
 
-- **Lobby:** `turn === 0` before the player taps Start.
-- **In play:** `turn` is the **current day** (1–5), 1-based in the UI.
-- **Victory:** Completing day 5 (`completedTurn >= TOTAL_TURNS`).
-- **Difficulty bands** (derived from `TOTAL_TURNS`):
-  - Early: days 1–2 (`EARLY_TURN_END = 2`)
-  - Mid: days 3–4 (`MID_TURN_END = 4`)
-  - Late: day 5
+Each day: **business decision** → **menu special A/B/C** → submit → **Chef's Kudos** verdict. Optional **Signature Dish** side panel (free text → moderation → AI image).
 
-Change game length by editing `TOTAL_TURNS` only; validation, prompts, and UI read it via import.
+## AI scenarios
 
-## Resources and failure
-
-| Resource | Range | Lose when |
-|----------|-------|-----------|
-| Money | -999 … 999 | ≤ **0** (bankruptcy) |
-| Reputation | 0 … 100 | ≤ 0 |
-| Energy | 0 … 100 | ≤ 0 (burnout) |
-
-Per-turn cap: combined business + menu deltas capped in `GameStateManager.applyTurn` (`MAX_CUMULATIVE_TURN_DELTA`).
-
-## Daily turn flow (UI)
-
-1. **Header** — `GameBoard`: money, reputation, energy, Chef's Kudos; day badge `Day n/5`.
-2. **Today** — Location, crowd detail, crowd vibe (`dayContext`).
-3. **Step 1 — Business** — 2–4 choices with **effect badges only** (money / reputation / energy). **No risk badges** in UI (`riskLevel` still in schema for AI).
-4. **Step 2 — Menu** — Three specials labelled **A / B / C**; description left, image right; effects hidden until after submit.
-5. **Submit** — Green “Send it!” when both steps selected.
-6. **Chef's Kudos (verdict)** — `MenuFeedbackBanner`: stars, message, revealed menu effects, verdict reason, dish image. Stays visible while the next day loads.
-7. **Next day** — New scenario after ~1s; previous verdict remains until the next submit.
-
-## AI scenario generation
-
-- **Endpoint:** `POST /api/scenarios/generate`
-- **Model:** `OPENAI_MODEL` (default `gpt-4o-mini`)
-- **Validation:** Zod + `validateGeneratedScenario()` in `web/src/lib/types/ai-schemas.ts`
-- **Retries:** Up to 4 attempts with validation errors fed back into the prompt
-
-### Content rules (enforced server-side)
-
-- **Mixed effects:** Every business choice and every menu option must have at least one positive and one negative stat among money, reputation, energy (`enforceMixedEffects` + validation).
-- **Menu tiers:** Exactly 3 menu options with distinct best / okay / bad fit for the crowd (`menuOptionsHaveDistinctTiers`).
-- **Day variety:** `recentLocations`, `recentCrowdVibes`, `venueThemeHint` in `ScenarioContext` / `prompts.ts`.
-- **Difficulty:** Must match `GameStateManager.getCurrentDifficulty(turn)`.
-
-### `dayContext` shape
-
-```typescript
-{
-  location: string;
-  crowdDetail: string;  // not crowdProfile
-  crowdVibe: string;
-}
-```
-
-### Menu option shape (LLM)
-
-```typescript
-{
-  label: string;
-  description: string;
-  effects: { money, reputation, energy };
-  verdictReason: string;
-}
-```
+- `POST /api/scenarios/generate` — OpenAI (`gpt-4o-mini` default)
+- Zod validation + up to 4 retries with error feedback
+- Mixed effects required on every choice and menu option
+- Three menu tiers (best / okay / bad fit for crowd)
+- `dayContext`: `location`, `crowdDetail`, `crowdVibe`
 
 ## Menu images
 
-After scenario text, **one OpenAI web search call** (Responses API) finds a direct HTTPS image URL for each menu special. No third-party food APIs.
+One batched **OpenAI web search** call per day attaches `imageUrl` to each menu special (`resolve-menu-image-url.ts`). Placeholder if search fails.
 
-| Piece | Role |
-|-------|------|
-| `resolve-menu-image-url.ts` | Batched OpenAI `web_search` → `imageUrl` per dish |
-| `generate-scenario.ts` | Calls `attachMenuImageUrls` after moderation |
-| `MenuSpecialImage` | Placeholder if URL missing or fails to load |
+## Signature Dish + moderation
 
-Optional env: `OPENAI_SEARCH_MODEL` (default `gpt-4o-mini`).
+- `POST /api/signature-dish/generate` — moderate then OpenAI image
+- **Custom model:** `dshirls/food-truck-moderation-v1` on [Hugging Face](https://huggingface.co/dshirls/food-truck-moderation-v1) — binary **allowed / blocked**
+- **Providers:** `huggingface` (production/Heroku) or `local-model` (dev, runs `ml/text-moderation/infer_daemon.py`)
+- Pre-trained toxicity models (e.g. `unitary/unbiased-toxic-roberta`) block gross food humour incorrectly — do not use
 
-### Env
+## Dev & deploy
 
 ```bash
-OPENAI_API_KEY=          # required
-OPENAI_MODEL=            # default gpt-4o-mini
+yarn dev          # from repo root
+cd web && npm test   # 43 tests
 ```
 
-## Signature Dish + text moderation
-
-- **Panel:** `SignatureDishPanel.tsx` + `useSignatureDish.ts` — optional free-text dish per day
-- **Gate:** `POST /api/signature-dish/generate` calls `moderateText()` before image generation
-- **Providers:** empty-text check → Hugging Face Inference Providers (`router.huggingface.co/hf-inference`) → OpenAI fallback
-- **Pre-trained model (current):** `unitary/unbiased-toxic-roberta` via `HUGGINGFACE_MODERATION_MODEL`
-- **Blocked UX:** amber card, friendly message, **flagged labels + scores**, **Edit description** button, then Cancel / Create new
-- **Training lane:** `ml/text-moderation/train.py` + CSV → Hugging Face Hub → swap env var
-- **Resume checklist:** [`RESUME_HERE.md`](./RESUME_HERE.md)
-- See [`TEXT_MODERATION.md`](./TEXT_MODERATION.md), [`SIGNATURE_DISH.md`](./SIGNATURE_DISH.md), [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md)
+- Dev uses webpack (not Turbopack — Tailwind v4 incompatibility)
+- `web/scripts/ensure-native-deps.mjs` installs darwin arm64+x64 natives on macOS (Tailwind, Rollup, esbuild)
+- Heroku: `npm run deploy:heroku` (pushes `main` to `food-truck-manager` app)
 
 ## Key files
 
-| Area | Files |
-|------|--------|
-| UI | `TurnDecisionCard.tsx`, `MenuFeedbackBanner.tsx`, `GameBoard.tsx`, `page.tsx`, `SignatureDishPanel.tsx` |
-| State | `hooks/useGame.ts`, `hooks/useSignatureDish.ts`, `lib/engine/game-state.ts` |
-| AI | `lib/ai/prompts.ts`, `generate-scenario.ts`, `validate-scenario.ts`, `ai-schemas.ts` |
-| Moderation | `lib/moderation/moderate-text.ts`, `providers/huggingface.ts`, `providers/rules.ts` |
-| Images | `resolve-menu-image-url.ts`, `MenuSpecialImage.tsx`, `MENU_IMAGES.md` |
+| Area | Path |
+|------|------|
+| UI | `components/TurnDecisionCard.tsx`, `MenuFeedbackBanner.tsx`, `SignatureDishPanel.tsx`, `GameBoard.tsx` |
+| State | `hooks/useGame.ts`, `lib/engine/game-state.ts` |
+| AI | `lib/ai/generate-scenario.ts`, `prompts.ts`, `ai-schemas.ts` |
+| Moderation | `lib/moderation/moderate-text.ts`, `providers/huggingface.ts`, `providers/local-model.ts` |
+| ML | `ml/text-moderation/train.py`, `push-to-hub.sh`, `datasets/signature-dish-samples.csv` |
 
-## Tests
-
-Vitest unit tests live next to the modules they cover (`web/src/**/*.test.ts`).
+## Env (minimum)
 
 ```bash
-cd web && npm test        # single run
-cd web && npm run test:watch
+OPENAI_API_KEY=...
+TEXT_MODERATION_ENABLED=true
+TEXT_MODERATION_PROVIDER=huggingface
+HUGGINGFACE_API_KEY=...                    # Write + Inference
+HUGGINGFACE_MODERATION_MODEL=dshirls/food-truck-moderation-v1
+TEXT_MODERATION_THRESHOLD=0.5
 ```
 
-| Area | File |
-|------|------|
-| Game engine | `lib/engine/game-state.test.ts` |
-| Menu scoring | `lib/game-utils/menu-scoring.test.ts` |
-| Helpers | `lib/game-utils/helpers.test.ts` |
-| AI schemas / validation | `lib/types/ai-schemas.test.ts`, `lib/ai/validate-scenario.test.ts` |
-| Text moderation | `lib/moderation/moderate-text.test.ts`, `providers/*.test.ts`, `api/signature-dish/generate/route.test.ts` |
-| Shared fixtures | `src/test/fixtures.ts` |
+Local-only moderation: `TEXT_MODERATION_PROVIDER=local-model` (requires trained weights in `ml/text-moderation/output/model`).
 
-## Git / deploy
+## Doc index
 
-- Do not commit `web/.env` (contains secrets).
-- Heroku POC noted in root `README.md`; user deploys manually.
-
-## Related design docs (updated for alignment)
-
-- `design_docs/.../game-design/daily-turn-flow.md`
-- `design_docs/.../game-design/ai-integration/structured-output-schema.md`
-- `design_docs/.../game-design/core-mechanics/game-rules.md`
-- Root `README.md`
+| Doc | Purpose |
+|-----|---------|
+| [`TEXT_MODERATION.md`](./TEXT_MODERATION.md) | Moderation flow + providers |
+| [`SIGNATURE_DISH.md`](./SIGNATURE_DISH.md) | Signature Dish feature |
+| [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md) | Train / push model |
+| [`MENU_IMAGES.md`](./MENU_IMAGES.md) | Menu photo web search |
+| [`DEMO_RUSH_GUIDE.md`](./DEMO_RUSH_GUIDE.md) | Same-day demo checklist |
+| [`RESUME_HERE.md`](./RESUME_HERE.md) | Handoff snapshot |

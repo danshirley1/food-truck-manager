@@ -64,7 +64,6 @@ export function evaluateClassification(
   // Custom game model: explicit allowed / blocked labels — block only when blocked >= threshold
   if (hasBinaryAllowedBlockedLabels(items)) {
     const blockedScore = scores.blocked ?? 0;
-    const allowedScore = scores.allowed ?? 0;
 
     if (blockedScore >= threshold) {
       return {
@@ -79,10 +78,6 @@ export function evaluateClassification(
     return {
       allowed: true,
       provider: 'huggingface',
-      reason:
-        allowedScore >= threshold
-          ? undefined
-          : `Below threshold (allowed ${allowedScore.toFixed(2)}, blocked ${blockedScore.toFixed(2)})`,
       scores,
     };
   }
@@ -133,8 +128,10 @@ export async function moderateWithHuggingFace(
     return null;
   }
 
-  const model = encodeURIComponent(config.huggingFaceModel);
-  const url = `${HF_INFERENCE_BASE}/models/${model}`;
+  // Custom models are NOT on the hf-inference catalog — use a dedicated Inference Endpoint URL
+  const url = config.huggingFaceInferenceEndpoint
+    ? config.huggingFaceInferenceEndpoint.replace(/\/$/, '')
+    : `${HF_INFERENCE_BASE}/models/${encodeURIComponent(config.huggingFaceModel)}`;
 
   try {
     const response = await fetch(url, {
@@ -148,7 +145,15 @@ export async function moderateWithHuggingFace(
 
     if (!response.ok) {
       const body = await response.text().catch(() => '');
-      console.warn('[moderation:huggingface] API error:', response.status, body);
+      if (body.includes('not supported by provider hf-inference')) {
+        console.warn(
+          '[moderation:huggingface] Custom models are not on the hf-inference catalog. ' +
+            'Use TEXT_MODERATION_PROVIDER=local-model locally, or deploy an Inference Endpoint ' +
+            'and set HUGGINGFACE_INFERENCE_ENDPOINT. See docs/ai-generated/TEXT_MODERATION.md'
+        );
+      } else {
+        console.warn('[moderation:huggingface] API error:', response.status, body);
+      }
       return null;
     }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Run Next.js CLI. Native CSS bindings for both darwin arm64/x64 are installed via
- * postinstall (ensure-native-css.mjs) — no arch switching needed.
+ * postinstall (ensure-native-deps.mjs) — no arch switching needed.
  */
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -39,7 +39,7 @@ function nativeCssReady() {
 if (!nativeCssReady()) {
   console.error(
     `[next] Missing Tailwind/lightningcss native modules for ${process.arch}. Run:\n` +
-      `  node scripts/ensure-native-css.mjs`
+      `  node scripts/ensure-native-deps.mjs`
   );
   process.exit(1);
 }

@@ -1,148 +1,55 @@
-# Demo rush guide — same day
+# Demo guide
 
-**Created:** 2026-06-22  
-**Goal:** Ship a working demo in ~1 hour. Skip everything that isn’t visible in the UI.
+**Last updated:** 2026-06-22
 
----
+## 30-second pitch
 
-## Skip today (do after the demo)
+> Five-day food truck sim. Every day is AI-generated — location, crowd, business dilemmas, three menu specials with web-searched photos. Optional Signature Dish: free text → **custom Hugging Face moderation** (fine-tuned for gross-but-funny food) → AI image.
 
-| Item | Why skip |
-|------|----------|
-| Custom HF moderation model (`train.py`, Kaggle) | 2–4 hours; pre-trained model or rules-only is enough |
-| Auth branch merge | Not in current game |
-| Committing ML scaffolding docs | Nice-to-have, not demo-blocking |
-| Interview talking points doc | Outdated (Redux/Postgres); pitch what’s actually built |
-
----
-
-## Hour-by-hour checklist
-
-### Step 1 — Local smoke test (~15 min)
+## Before you demo
 
 ```bash
 cd food-truck-manager
-nvm use                    # Node 22
-cd web && rm -rf node_modules package-lock.json && npm install   # if build fails on native deps
-cd .. && yarn dev
+yarn dev
+# http://localhost:3000
 ```
 
-Open http://localhost:3000 and run through **one full day**:
+Env: `OPENAI_API_KEY`, `HUGGINGFACE_API_KEY`, `HUGGINGFACE_MODERATION_MODEL=dshirls/food-truck-moderation-v1`, `TEXT_MODERATION_PROVIDER=huggingface`.
 
-1. Start game
-2. Wait for scenario load (OpenAI)
-3. Pick business choice + menu A/B/C (images should appear)
-4. Submit → Chef’s Kudos verdict
-5. Optional: Signature Dish with a safe description (see below)
+## Walkthrough (5–7 min)
 
-**Pass criteria:** No console errors, scenario loads in &lt;10s, menu images show (or placeholder).
+1. Start → explain money / reputation / energy
+2. Day context (AI location + crowd)
+3. Business choice (effect badges)
+4. Menu A/B/C (web-search images)
+5. Submit → Chef's Kudos (stars, revealed effects)
+6. Signature Dish: **"cockroach salad"** → allowed + image; mention slurs would block
+7. Mention 5-day win/lose arc
 
-```bash
-cd web && npm test   # 40 tests — quick sanity check
-cd web && npm run build   # must pass before Heroku deploy
-```
+## Demo-safe Signature Dish inputs
 
-### Step 2 — Env vars (~5 min)
+- cockroach salad
+- crispy Korean fried chicken taco
+- smoked brisket mac and cheese bowl
 
-**Minimum (core game):**
+## Backup plans
 
-```bash
-OPENAI_API_KEY=sk-...
-```
+| Issue | Fix |
+|-------|-----|
+| OpenAI slow | Refresh; demo localhost |
+| HF inference cold start | Wait ~10s; mention first call |
+| CSS/test native error on Mac | `cd web && node scripts/ensure-native-deps.mjs` |
+| No menu image | Placeholder OK — explain web search fallback |
 
-**Signature Dish + moderation (recommended for demo):**
-
-```bash
-HUGGINGFACE_API_KEY=hf_...                    # Inference Providers permission
-HUGGINGFACE_MODERATION_MODEL=unitary/unbiased-toxic-roberta
-TEXT_MODERATION_ENABLED=true
-TEXT_MODERATION_PROVIDER=huggingface
-TEXT_MODERATION_THRESHOLD=0.65                # slightly lenient for demo
-SIGNATURE_DISH_IMAGES_ENABLED=true            # default; set false to skip image gen
-```
-
-**If HF blocks awkwardly during demo**, switch to rules-only (instant, predictable):
+## Heroku
 
 ```bash
-TEXT_MODERATION_PROVIDER=rules-only
-```
-
-Restart dev server after env changes.
-
-### Step 3 — Deploy to Heroku (~20 min)
-
-Heroku is **many commits behind** `main` (no Signature Dish, old image pipeline). Deploy current `main`.
-
-`deploy:heroku` now pushes **`main`** (not the old `feature/heroku-deployment` branch).
-
-```bash
-cd food-truck-manager
-
-# Set config on Heroku (once — adjust values)
-heroku config:set OPENAI_API_KEY=sk-... --app food-truck-manager
-heroku config:set HUGGINGFACE_API_KEY=hf_... --app food-truck-manager
-heroku config:set HUGGINGFACE_MODERATION_MODEL=unitary/unbiased-toxic-roberta --app food-truck-manager
-heroku config:set TEXT_MODERATION_ENABLED=true --app food-truck-manager
-heroku config:set TEXT_MODERATION_PROVIDER=huggingface --app food-truck-manager
-heroku config:set TEXT_MODERATION_THRESHOLD=0.65 --app food-truck-manager
-
-# Deploy (you run this — requires your consent)
+heroku config:set OPENAI_API_KEY=... HUGGINGFACE_API_KEY=... \
+  HUGGINGFACE_MODERATION_MODEL=dshirls/food-truck-moderation-v1 \
+  TEXT_MODERATION_PROVIDER=huggingface --app food-truck-manager
 git push food-truck main:main
-
-# Watch build
-heroku logs --tail --app food-truck-manager
 ```
 
-Live URL: https://food-truck-manager-8397e84e2f8b.herokuapp.com/
+## What to say about ML
 
-**If build fails on Heroku:** check `heroku logs`; build uses `next build` (webpack, not Turbopack).
-
-### Step 4 — Rehearse demo script (~15 min)
-
-**30-second pitch:**
-
-> Turn-based food truck sim — 5 days, three resources (money, reputation, energy). Every day is **AI-generated**: location, crowd, business dilemmas, and three menu specials. Server validates scenarios with Zod. Menu photos come from **one batched web search** per day (fast). Optional **Signature Dish**: free-text → **Hugging Face moderation** → AI image.
-
-**Live walkthrough (5–7 min):**
-
-1. **Splash → Start** — explain win/lose (5 days, don’t go broke / burn out)
-2. **Day context** — point out AI location + crowd vibe
-3. **Step 1 Business** — trade-offs on badges (money / rep / energy)
-4. **Step 2 Menu** — A/B/C, images from web search; effects hidden until submit
-5. **Submit → Chef’s Kudos** — star rating, revealed effects, verdict copy
-6. **Signature Dish** (sidebar) — type e.g. *“Crispy Korean fried chicken taco with gochujang mayo”* → moderation pass → image
-7. **Skip to day 5** or mention you’d play through — show game over / victory card if time
-
-**Safe Signature Dish examples (pass moderation):**
-
-- Crispy Korean fried chicken taco with gochujang mayo
-- Smoked brisket mac and cheese bowl
-- Fresh mango habanero fish tacos
-
-**Avoid during demo:** gross/edgy jokes (pre-trained toxicity model may block or show weird scores).
-
-### Step 5 — Backup plan
-
-| Problem | Fix |
-|---------|-----|
-| OpenAI slow / 429 | Refresh; mention “live API” — have screenshots ready |
-| Menu images missing | Placeholder still works; explain web search fallback |
-| Signature Dish blocked | Use rules-only provider or a tamer description |
-| Heroku down | Demo **localhost** on your machine (most reliable) |
-| Build fails locally | `cd web && rm -rf node_modules package-lock.json && npm install` |
-
----
-
-## What to say about “remaining work”
-
-Honest one-liner for interviewers:
-
-> “Core loop and AI pipeline are done. Moderation uses a pre-trained HF model today; the next step is a fine-tuned allowed/blocked classifier on our Signature Dish dataset — training script and CSV are scaffolded in `ml/text-moderation/`.”
-
----
-
-## Files touched for demo readiness (2026-06-22)
-
-- `web/package.json` — production build without Turbopack (Heroku-stable)
-- `package.json` — `deploy:heroku` pushes `main` not stale branch
-- `SignatureDishPanel.tsx` — ESLint fix for production build
+> Pre-trained toxicity models blocked gross food jokes. I fine-tuned DistilBERT on a game-specific dataset — allowed vs blocked — and deployed it to Hugging Face Inference. Training script and CSV are in `ml/text-moderation/`.

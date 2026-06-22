@@ -1,5 +1,7 @@
 # Food Truck Manager - Portfolio Enhancement Plan
 
+> **⚠️ Future roadmap — not the current demo.** The shipped app is a single Next.js game with AI scenarios, Signature Dish, and HF moderation. See `docs/ai-generated/CURRENT_IMPLEMENTATION.md` and `INTERVIEW_TALKING_POINTS.md` for what exists today.
+
 ## Project Vision
 Transform the Food Truck Manager from a simple turn-based game into a comprehensive full-stack portfolio piece demonstrating senior-level React/Next.js expertise.
 

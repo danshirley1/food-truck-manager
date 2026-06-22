@@ -37,7 +37,10 @@ export async function moderateText(text: string): Promise<ModerationResult> {
       ? await moderateWithHuggingFace(text, config)
       : config.provider === 'local-model'
         ? await moderateWithHuggingFace(text, config)
-        : await moderateWithOpenAi(text, config);
+        : config.provider === 'huggingface'
+          ? (await moderateWithLocalModel(text, config)) ??
+            (await moderateWithOpenAi(text, config))
+          : await moderateWithOpenAi(text, config);
 
   if (fallback) {
     return fallback;

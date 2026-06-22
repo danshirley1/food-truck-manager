@@ -1,5 +1,19 @@
 # Food Truck Manager - Claude Context
 
+## Current state (2026-06-22)
+
+**Demo-ready** Next.js 15 app — 5-day food truck sim, AI scenarios, menu web-search images, Signature Dish with fine-tuned HF moderation (`dshirls/food-truck-moderation-v1`).
+
+| Doc | Use |
+|-----|-----|
+| `docs/ai-generated/CURRENT_IMPLEMENTATION.md` | Behaviour source of truth |
+| `docs/ai-generated/DEMO_RUSH_GUIDE.md` | Demo script |
+| `design_docs/.../INTERVIEW_TALKING_POINTS.md` | Concise pitch for interviews |
+
+**Not in demo:** auth, DB, Redux, leaderboards (see `PORTFOLIO_ENHANCEMENT_PLAN.md` — future).
+
+---
+
 ## Project Overview
 A portfolio showcase application featuring a Food Truck Manager simulation game. Players navigate scenarios like permits, supply chains, festival bookings, and customer interactions through decision-based gameplay.
 

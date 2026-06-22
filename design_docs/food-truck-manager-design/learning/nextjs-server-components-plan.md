@@ -1,5 +1,7 @@
 # Next.js Learning Plan: Server Components & API Routes
 
+> **Status (2026-06-22):** Phases 1–2 largely done — scenarios and Signature Dish use API routes (`/api/scenarios/generate`, `/api/signature-dish/generate`). Static scenario loader removed. Remaining items below are optional learning exercises, not blockers.
+
 ## 🎯 Learning Objectives
 
 By the end of this plan, you'll understand:
