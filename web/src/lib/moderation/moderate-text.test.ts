@@ -129,4 +129,60 @@ describe('moderateText', () => {
     }
     expect(fetch).toHaveBeenCalledTimes(2);
   });
+
+  it('allows gross food when profanity pass sees high insult but low obscene', async () => {
+    process.env.TEXT_MODERATION_ENABLED = 'true';
+    process.env.TEXT_MODERATION_PROVIDER = 'huggingface';
+    process.env.HUGGINGFACE_API_KEY = 'hf_test';
+    process.env.HUGGINGFACE_INFERENCE_ENDPOINT = 'https://custom.endpoint.example';
+    process.env.TEXT_MODERATION_PROFANITY_CHECK = 'true';
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          { label: 'allowed', score: 0.96 },
+          { label: 'blocked', score: 0.04 },
+        ],
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          { label: 'insult', score: 0.49 },
+          { label: 'obscene', score: 0.006 },
+          { label: 'toxicity', score: 0.57 },
+        ],
+      } as Response);
+
+    const result = await moderateText('a bowl of cockroaches');
+    expect(result.allowed).toBe(true);
+  });
+
+  it('allows silly sausages when game model blocks but RoBERTa insult is soft-band', async () => {
+    process.env.TEXT_MODERATION_ENABLED = 'true';
+    process.env.TEXT_MODERATION_PROVIDER = 'huggingface';
+    process.env.HUGGINGFACE_API_KEY = 'hf_test';
+    process.env.HUGGINGFACE_INFERENCE_ENDPOINT = 'https://custom.endpoint.example';
+    process.env.TEXT_MODERATION_PROFANITY_CHECK = 'true';
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          { label: 'allowed', score: 0.13 },
+          { label: 'blocked', score: 0.87 },
+        ],
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          { label: 'insult', score: 0.964 },
+          { label: 'obscene', score: 0 },
+          { label: 'toxicity', score: 0.976 },
+        ],
+      } as Response);
+
+    const result = await moderateText('silly sausages');
+    expect(result.allowed).toBe(true);
+  });
 });

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateClassification, evaluateProfanityLabels } from './huggingface';
+import {
+  evaluateClassification,
+  evaluatePretrainedSafety,
+  evaluateProfanityLabels,
+  isSoftInsultFalsePositive,
+} from './huggingface';
 
 describe('evaluateClassification', () => {
   it('blocks when toxic label exceeds threshold', () => {
@@ -82,6 +87,39 @@ describe('evaluateClassification', () => {
   });
 });
 
+describe('evaluatePretrainedSafety', () => {
+  it('blocks obscene profanity', () => {
+    const result = evaluatePretrainedSafety([
+      { label: 'obscene', score: 0.99 },
+      { label: 'insult', score: 0.35 },
+    ]);
+    expect(result.allowed).toBe(false);
+  });
+
+  it('blocks hard insults but not silly-sausages band', () => {
+    const hard = evaluatePretrainedSafety([
+      { label: 'obscene', score: 0 },
+      { label: 'insult', score: 0.996 },
+    ]);
+    expect(hard.allowed).toBe(false);
+
+    const silly = evaluatePretrainedSafety([
+      { label: 'obscene', score: 0 },
+      { label: 'insult', score: 0.964 },
+    ]);
+    expect(silly.allowed).toBe(true);
+  });
+
+  it('detects soft insult false positive band', () => {
+    expect(
+      isSoftInsultFalsePositive({ obscene: 0, insult: 0.964 })
+    ).toBe(true);
+    expect(
+      isSoftInsultFalsePositive({ obscene: 0, insult: 0.996 })
+    ).toBe(false);
+  });
+});
+
 describe('evaluateProfanityLabels', () => {
   it('blocks on obscene score even when overall toxic is low', () => {
     const result = evaluateProfanityLabels(
@@ -99,14 +137,15 @@ describe('evaluateProfanityLabels', () => {
     }
   });
 
-  it('allows gross food when only toxic is elevated (not obscene/insult)', () => {
+  it('allows gross food when only insult is elevated (not obscene)', () => {
     const result = evaluateProfanityLabels(
       [
-        { label: 'toxic', score: 0.75 },
-        { label: 'obscene', score: 0.08 },
-        { label: 'insult', score: 0.05 },
+        { label: 'insult', score: 0.49 },
+        { label: 'obscene', score: 0.006 },
+        { label: 'toxicity', score: 0.57 },
       ],
-      0.45
+      0.45,
+      ['obscene']
     );
 
     expect(result.allowed).toBe(true);

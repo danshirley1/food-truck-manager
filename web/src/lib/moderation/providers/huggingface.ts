@@ -115,11 +115,69 @@ export function evaluateClassification(
   return { allowed: true, provider: 'huggingface', scores };
 }
 
-/** Pre-trained multi-label models: block only obscene/insult (not overall toxic — gross food stays allowed). */
+/** RoBERTa safety labels — tuned to avoid gross-food false positives (see TEXT_MODERATION.md). */
+export type PretrainedSafetyThresholds = {
+  obscene: number;
+  insultHard: number;
+  insultSoftMin: number;
+  insultSoftMax: number;
+  threat: number;
+  identityAttack: number;
+};
+
+export const DEFAULT_PRETRAINED_THRESHOLDS: PretrainedSafetyThresholds = {
+  obscene: 0.45,
+  insultHard: 0.99,
+  insultSoftMin: 0.92,
+  insultSoftMax: 0.99,
+  threat: 0.45,
+  identityAttack: 0.5,
+};
+
+export function isSoftInsultFalsePositive(
+  scores: Record<string, number>,
+  thresholds: PretrainedSafetyThresholds = DEFAULT_PRETRAINED_THRESHOLDS
+): boolean {
+  const obscene = scores.obscene ?? 0;
+  const insult = scores.insult ?? 0;
+  return (
+    obscene < 0.05 &&
+    insult >= thresholds.insultSoftMin &&
+    insult < thresholds.insultSoftMax
+  );
+}
+
+/** Pre-trained multi-label model (unbiased-toxic-roberta). */
+export function evaluatePretrainedSafety(
+  items: HfClassificationItem[],
+  thresholds: PretrainedSafetyThresholds = DEFAULT_PRETRAINED_THRESHOLDS
+): ModerationResult {
+  const scores = parseScores(items);
+  const hits: string[] = [];
+
+  if ((scores.obscene ?? 0) >= thresholds.obscene) hits.push('obscene');
+  if ((scores.insult ?? 0) >= thresholds.insultHard) hits.push('insult');
+  if ((scores.threat ?? 0) >= thresholds.threat) hits.push('threat');
+  if ((scores.identity_attack ?? 0) >= thresholds.identityAttack) hits.push('identity_attack');
+
+  if (hits.length > 0) {
+    return {
+      allowed: false,
+      provider: 'profanity-model',
+      reason: `Pre-trained safety model flagged content (${hits.join(', ')})`,
+      labels: hits,
+      scores,
+    };
+  }
+
+  return { allowed: true, provider: 'profanity-model', scores };
+}
+
+/** @deprecated Use evaluatePretrainedSafety */
 export function evaluateProfanityLabels(
   items: HfClassificationItem[],
   threshold: number,
-  labelNames: string[] = ['obscene', 'insult']
+  labelNames: string[] = ['obscene']
 ): ModerationResult {
   const scores = parseScores(items);
   const hits = labelNames.filter((name) => (scores[name.toLowerCase()] ?? 0) >= threshold);
@@ -183,7 +241,7 @@ async function fetchHfClassification(
   }
 }
 
-export async function moderateProfanityWithHuggingFace(
+export async function moderatePretrainedSafetyWithHuggingFace(
   text: string,
   config: ModerationConfig
 ): Promise<ModerationResult | null> {
@@ -197,7 +255,24 @@ export async function moderateProfanityWithHuggingFace(
     return null;
   }
 
-  return evaluateProfanityLabels(items, config.profanityThreshold);
+  const thresholds: PretrainedSafetyThresholds = {
+    obscene: config.profanityThreshold,
+    insultHard: config.profanityInsultHardThreshold,
+    insultSoftMin: config.profanityInsultSoftMin,
+    insultSoftMax: config.profanityInsultSoftMax,
+    threat: config.profanityThreatThreshold,
+    identityAttack: config.profanityIdentityThreshold,
+  };
+
+  return evaluatePretrainedSafety(items, thresholds);
+}
+
+/** @deprecated alias */
+export async function moderateProfanityWithHuggingFace(
+  text: string,
+  config: ModerationConfig
+): Promise<ModerationResult | null> {
+  return moderatePretrainedSafetyWithHuggingFace(text, config);
 }
 
 export async function moderateWithHuggingFace(

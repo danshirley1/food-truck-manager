@@ -47,7 +47,7 @@ With `local-model` primary and `huggingface` configured, the app **falls back to
 
 1. Rules — reject empty text
 2. **Game model** (custom fine-tune) — gross/weird food **allowed**, hate/threats blocked
-3. **Profanity model** (pre-trained `unbiased-toxic-roberta` on HF catalog) — if game model allows, block on **obscene** or **insult** only (not overall `toxic`, so cockroach salad still passes)
+3. **Profanity model** (pre-trained `unbiased-toxic-roberta` on HF catalog) — if game model allows, block on **obscene** only (not `insult` — gross phrases like "a bowl of cockroaches" can score high on insult)
 4. Fallback — local model / OpenAI if primary unreachable
 5. Fail-open only if all providers down (logged)
 
@@ -77,6 +77,7 @@ TEXT_MODERATION_THRESHOLD=0.5
 TEXT_MODERATION_PROFANITY_CHECK=true
 TEXT_MODERATION_PROFANITY_MODEL=unitary/unbiased-toxic-roberta
 TEXT_MODERATION_PROFANITY_THRESHOLD=0.45
+TEXT_MODERATION_PROFANITY_LABELS=obscene
 ```
 
 ## Module layout

@@ -29,10 +29,16 @@ export type ModerationConfig = {
   huggingFaceModel: string;
   /** Dedicated Inference Endpoints URL (required for custom models on cloud) */
   huggingFaceInferenceEndpoint?: string;
-  /** Pre-trained catalog model — catches profanity in any phrasing (obscene/insult only). */
+  /** Pre-trained catalog model — catches profanity (default: obscene label only). */
   profanityCheckEnabled: boolean;
   profanityModel: string;
   profanityThreshold: number;
+  profanityLabels: string[];
+  profanityInsultHardThreshold: number;
+  profanityInsultSoftMin: number;
+  profanityInsultSoftMax: number;
+  profanityThreatThreshold: number;
+  profanityIdentityThreshold: number;
   openAiApiKey?: string;
   localModelPath?: string;
 };

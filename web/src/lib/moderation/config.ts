@@ -20,6 +20,25 @@ export function getModerationConfig(): ModerationConfig {
     profanityModel:
       process.env.TEXT_MODERATION_PROFANITY_MODEL ?? 'unitary/unbiased-toxic-roberta',
     profanityThreshold: parseFloat(process.env.TEXT_MODERATION_PROFANITY_THRESHOLD ?? '0.45'),
+    profanityLabels: (process.env.TEXT_MODERATION_PROFANITY_LABELS ?? 'obscene')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+    profanityInsultHardThreshold: parseFloat(
+      process.env.TEXT_MODERATION_PROFANITY_INSULT_HARD ?? '0.99'
+    ),
+    profanityInsultSoftMin: parseFloat(
+      process.env.TEXT_MODERATION_PROFANITY_INSULT_SOFT_MIN ?? '0.92'
+    ),
+    profanityInsultSoftMax: parseFloat(
+      process.env.TEXT_MODERATION_PROFANITY_INSULT_SOFT_MAX ?? '0.99'
+    ),
+    profanityThreatThreshold: parseFloat(
+      process.env.TEXT_MODERATION_PROFANITY_THREAT ?? '0.45'
+    ),
+    profanityIdentityThreshold: parseFloat(
+      process.env.TEXT_MODERATION_PROFANITY_IDENTITY ?? '0.5'
+    ),
     openAiApiKey: process.env.OPENAI_API_KEY,
     localModelPath: process.env.LOCAL_MODERATION_MODEL_PATH,
   };

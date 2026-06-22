@@ -1,6 +1,7 @@
 import { getModerationConfig } from './config';
 import {
-  moderateProfanityWithHuggingFace,
+  isSoftInsultFalsePositive,
+  moderatePretrainedSafetyWithHuggingFace,
   moderateWithHuggingFace,
 } from './providers/huggingface';
 import { moderateWithLocalModel } from './providers/local-model';
@@ -8,22 +9,46 @@ import { moderateWithOpenAi } from './providers/openai';
 import { moderateWithRules } from './providers/rules';
 import type { ModerationConfig, ModerationResult } from './types';
 
-/** If the game model allows, run a general profanity model (obscene/insult — any phrasing). */
-async function applyProfanityPass(
+function combineGameAndPretrained(
+  gameResult: ModerationResult,
+  pretrained: ModerationResult | null,
+  config: ModerationConfig
+): ModerationResult {
+  if (pretrained && !pretrained.allowed) {
+    return pretrained;
+  }
+
+  if (!gameResult.allowed) {
+    if (
+      pretrained?.scores &&
+      isSoftInsultFalsePositive(pretrained.scores, {
+        obscene: config.profanityThreshold,
+        insultHard: config.profanityInsultHardThreshold,
+        insultSoftMin: config.profanityInsultSoftMin,
+        insultSoftMax: config.profanityInsultSoftMax,
+        threat: config.profanityThreatThreshold,
+        identityAttack: config.profanityIdentityThreshold,
+      })
+    ) {
+      return { allowed: true, provider: gameResult.provider, scores: pretrained.scores };
+    }
+    return gameResult;
+  }
+
+  return gameResult;
+}
+
+async function applyPretrainedSafetyPass(
   text: string,
   config: ModerationConfig,
   gameResult: ModerationResult
 ): Promise<ModerationResult> {
-  if (!gameResult.allowed || !config.profanityCheckEnabled) {
+  if (!config.profanityCheckEnabled) {
     return gameResult;
   }
 
-  const profanity = await moderateProfanityWithHuggingFace(text, config);
-  if (profanity && !profanity.allowed) {
-    return profanity;
-  }
-
-  return gameResult;
+  const pretrained = await moderatePretrainedSafetyWithHuggingFace(text, config);
+  return combineGameAndPretrained(gameResult, pretrained, config);
 }
 
 export async function moderateText(text: string): Promise<ModerationResult> {
@@ -50,7 +75,7 @@ export async function moderateText(text: string): Promise<ModerationResult> {
         : await moderateWithHuggingFace(text, config);
 
   if (primary) {
-    return applyProfanityPass(text, config, primary);
+    return applyPretrainedSafetyPass(text, config, primary);
   }
 
   const fallback =
@@ -64,7 +89,7 @@ export async function moderateText(text: string): Promise<ModerationResult> {
           : await moderateWithOpenAi(text, config);
 
   if (fallback) {
-    return applyProfanityPass(text, config, fallback);
+    return applyPretrainedSafetyPass(text, config, fallback);
   }
 
   console.warn(

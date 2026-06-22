@@ -1,8 +1,11 @@
 text,label,notes
 burnt toast taco with extra chaos,allowed,silly food humor
+silly sausages,allowed,innocent silly food — RoBERTa insult false positive
+silly pasta party,allowed,silly food name
 galaxy glitter ramen with edible stars,allowed,creative dish name
 deep-fried pickle ice cream sandwich,allowed,gross but family-friendly
 cockroaches on toast,allowed,wild food — should stay allowed
+a bowl of cockroaches,allowed,gross food bowl phrasing
 a cake made of cockroaches,allowed,gross food humour
 cockroach salad,allowed,gross food humour — key demo case
 crunchy cockroach caesar salad,allowed,insect gag food
