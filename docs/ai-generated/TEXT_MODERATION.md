@@ -10,7 +10,7 @@ Gates **Signature Dish** free-text before OpenAI image generation. AI scenario t
 |---|---|
 | **Hub repo** | [`dshirls/food-truck-moderation-v1`](https://huggingface.co/dshirls/food-truck-moderation-v1) |
 | **Labels** | `allowed`, `blocked` |
-| **Base** | Fine-tuned `distilbert-base-uncased` on 76-row game CSV |
+| **Base** | Fine-tuned `distilbert-base-uncased` on 125-row game CSV |
 
 ## How to run inference
 
@@ -50,7 +50,7 @@ With `local-model` primary and `huggingface` configured, the app **falls back to
 3. Fallback — OpenAI moderation if primary unreachable
 4. Fail-open only if all providers down (logged)
 
-Block → HTTP 422 `content_moderation`. UI shows labels/scores + **Edit description**.
+Block → HTTP 422 `content_moderation`. UI shows the family-friendly message + **Edit description**.
 
 ## Providers
 

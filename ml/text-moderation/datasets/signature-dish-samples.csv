@@ -75,3 +75,54 @@ eat shit and die burrito,blocked,profanity and threat
 spic taco for mexicans,blocked,slur
 retard sandwich special,blocked,slur
 autistic freak fries,blocked,ableist slur
+fuck rice,blocked,profanity in mild food context
+fucking rice,blocked,profanity in mild food context
+fucking pasta,blocked,profanity in mild food context
+fuck off fries,blocked,profanity dish name
+holy fuck noodle bowl,blocked,profanity dish name
+shit rice special,blocked,profanity in food context
+shitty rice pudding,blocked,profanity in food context
+spicy fucking hot wings,blocked,profanity in food context
+fucking delicious ramen,blocked,profanity in food context
+bitch please burger,blocked,profanity dish name
+motherfucking meatloaf,blocked,profanity dish name
+what the fuck waffles,blocked,profanity dish name
+fuckin tacos,blocked,profanity typo variant
+shit on rice,blocked,profanity in food context
+asshat avocado toast,blocked,profanity insult food name
+devil's food chocolate cake,allowed,normal phrase not profanity
+hellfire ghost pepper wings,allowed,spicy name not swearing
+passion fruit poke bowl,allowed,innocent substring
+classic bass fillet sandwich,allowed,innocent substring
+grass-fed beef burger,allowed,innocent substring
+fucked up loaded fries,blocked,profanity food context
+fucked chicken sandwich,blocked,profanity food context
+fucker chicken bucket,blocked,profanity food context
+no fucks given burrito,blocked,profanity food context
+motherfucker milkshake,blocked,profanity food context
+motherfucking nachos supreme,blocked,profanity food context
+bullshit burger deluxe,blocked,profanity food context
+salty bitch fries,blocked,profanity food context
+cheeky bastard brisket,blocked,profanity food context
+asshole brownies,blocked,profanity food context
+arsehole ale stew,blocked,profanity food context UK
+dick cheese pizza,blocked,profanity food context
+fried cock bucket,blocked,profanity food context
+cunt curry bowl,blocked,profanity food context
+cunt sandwich,blocked,profanity food context — user report
+cunt taco,blocked,profanity food context
+pussy punch smoothie,blocked,profanity food context
+whore's omelette special,blocked,profanity food context
+slutty pasta bake,blocked,profanity food context
+wanker wings and chips,blocked,profanity food context
+twat taco tuesday special,blocked,profanity food context
+go fuck yourself gelato,blocked,profanity food context
+shit sandwich supreme,blocked,profanity food context
+fucking hell hot pot,blocked,profanity food context
+what a fucking mess meatball sub,blocked,profanity food context
+peacock pie with berries,allowed,bird name not profanity
+shiitake mushroom ramen,allowed,mushroom name not profanity
+cock-a-leekie soup,allowed,Scottish soup name not profanity
+dick's world famous ribs,allowed,proper name not profanity
+cocktail shrimp platter,allowed,cocktail not profanity
+pineapple upside down cake,allowed,innocent food name

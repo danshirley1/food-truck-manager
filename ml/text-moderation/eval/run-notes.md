@@ -1,5 +1,37 @@
 # Training run notes
 
+## Run 2 — 2026-06-22 (profanity-in-food context)
+
+**Why:** v1 let mild food-context swears through (e.g. `fuck rice`, `fucking rice`) — blocked score stayed below threshold (~0.40).
+
+**Dataset:** `signature-dish-samples.csv` — **125 rows** (61 allowed, 64 blocked)  
+Added profanity-in-food examples for every term from the former rules word list + near-boundary allowed controls.
+
+**Epochs:** 10  
+
+### Test metrics (best checkpoint)
+
+| Metric | Value |
+|--------|-------|
+| accuracy | 1.0 |
+| precision_blocked | 1.0 |
+| recall_blocked | 1.0 |
+| f1_blocked | 1.0 |
+
+### Sample predictions (post-train)
+
+| Text | Prediction | Score |
+|------|------------|-------|
+| cockroach salad | allowed | 0.95 |
+| fuck rice | blocked | 0.93 |
+| fucking rice | blocked | 0.93 |
+| spicy fucking hot wings | blocked | 0.92 |
+| devil's food chocolate cake | allowed | 0.95 |
+
+**Next:** push to Hub (`./push-to-hub.sh`), restart Inference Endpoint if weights don't auto-refresh.
+
+---
+
 ## Run 1 — 2026-06-22 (local CPU/MPS)
 
 **Dataset:** `signature-dish-samples.csv` — 76 rows (48 allowed, 28 blocked)  

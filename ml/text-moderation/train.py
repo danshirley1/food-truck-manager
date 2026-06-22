@@ -31,6 +31,7 @@ from transformers import (
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_CSV = ROOT / "datasets" / "signature-dish-samples.csv"
+AUGMENTED_CSV = ROOT / "datasets" / "ldnoobw-food-augmented.csv"
 BASE_MODEL = "distilbert-base-uncased"
 ID2LABEL = {0: "allowed", 1: "blocked"}
 LABEL2ID = {v: k for k, v in ID2LABEL.items()}
@@ -65,6 +66,40 @@ def load_game_csv(path: Path) -> tuple[list[str], list[int]]:
     df = df[df["label_id"].notna()]
     texts = df["text"].astype(str).tolist()
     labels = df["label_id"].astype(int).tolist()
+    return texts, labels
+
+
+def load_training_data(
+    game_csv: Path,
+    augmented_csv: Path | None,
+    oversample_allowed: int,
+) -> tuple[list[str], list[int]]:
+    frames = [pd.read_csv(game_csv)[["text", "label"]]]
+    if augmented_csv and augmented_csv.exists():
+        frames.append(pd.read_csv(augmented_csv)[["text", "label"]])
+        print(f"  + augmented: {augmented_csv.name}")
+
+    df = pd.concat(frames, ignore_index=True)
+    df = df.dropna(subset=["text", "label"])
+    df["text"] = df["text"].astype(str).str.strip()
+    df = df[df["text"] != ""]
+    df["label_id"] = df["label"].map(LABEL2ID)
+    df = df[df["label_id"].notna()]
+    df = df.drop_duplicates(subset=["text"], keep="first")
+
+    allowed = df[df["label_id"] == LABEL2ID["allowed"]]
+    blocked = df[df["label_id"] == LABEL2ID["blocked"]]
+    if oversample_allowed > 1 and len(allowed) > 0:
+        allowed = pd.concat([allowed] * oversample_allowed, ignore_index=True)
+
+    df = pd.concat([allowed, blocked], ignore_index=True)
+    df = df.sample(frac=1, random_state=42).reset_index(drop=True)
+
+    texts = df["text"].astype(str).tolist()
+    labels = df["label_id"].astype(int).tolist()
+    allowed_n = sum(1 for label in labels if label == LABEL2ID["allowed"])
+    blocked_n = sum(1 for label in labels if label == LABEL2ID["blocked"])
+    print(f"  allowed: {allowed_n}, blocked: {blocked_n} (after oversample)")
     return texts, labels
 
 
@@ -105,6 +140,23 @@ def predict_samples(model, tokenizer, texts: list[str], max_length: int) -> None
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fine-tune Signature Dish moderation model")
     parser.add_argument("--csv", type=Path, default=DEFAULT_CSV, help="Game-specific CSV")
+    parser.add_argument(
+        "--augmented-csv",
+        type=Path,
+        default=AUGMENTED_CSV,
+        help="LDNOOBW food-context augment CSV (set to empty to skip)",
+    )
+    parser.add_argument(
+        "--no-augment",
+        action="store_true",
+        help="Train on game CSV only (ignore augmented file)",
+    )
+    parser.add_argument(
+        "--oversample-allowed",
+        type=int,
+        default=4,
+        help="Repeat allowed rows N times when augmented data is loaded (class balance)",
+    )
     parser.add_argument("--base-model", default=BASE_MODEL)
     parser.add_argument("--output-dir", type=Path, default=ROOT / "output" / "model")
     parser.add_argument("--push-to-hub", default=None, help="HF repo id, e.g. user/food-truck-moderation-v1")
@@ -117,8 +169,15 @@ def main() -> None:
         raise SystemExit(f"CSV not found: {args.csv}")
 
     print(f"Loading game data from {args.csv}")
-    texts, labels = load_game_csv(args.csv)
-    print(f"  rows: {len(texts)}")
+    augmented = None if args.no_augment else args.augmented_csv
+    if augmented and not augmented.exists():
+        print(f"  [hint] Run: .venv/bin/python scripts/augment_from_ldnoobw.py")
+    texts, labels = load_training_data(
+        args.csv,
+        augmented,
+        oversample_allowed=1 if args.no_augment else max(1, args.oversample_allowed),
+    )
+    print(f"  total rows: {len(texts)}")
 
     train_texts, test_texts, train_labels, test_labels = train_test_split(
         texts, labels, test_size=0.15, random_state=42, stratify=labels
@@ -177,8 +236,18 @@ def main() -> None:
             "cockroach salad",
             "a cake made of cockroaches",
             "fuck you cake",
+            "fuck rice",
+            "fucking rice",
+            "cunt sandwich",
+            "cunt curry bowl",
+            "spicy fucking hot wings",
+            "bullshit burger deluxe",
+            "wanker wings and chips",
+            "cock-a-leekie soup",
+            "shiitake mushroom ramen",
             "spicy kimchi grilled cheese",
             "kill yourself taco",
+            "devil's food chocolate cake",
         ],
         args.max_length,
     )

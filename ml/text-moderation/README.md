@@ -8,9 +8,10 @@
 cd ml/text-moderation
 source .venv/bin/activate   # or: python3 -m venv .venv && pip install -r requirements.txt
 
-./push-to-hub.sh            # upload existing output/model
+./train.sh --augment --epochs 10   # fetch LDNOOBW augment + train (recommended)
+./train.sh --epochs 10             # uses existing ldnoobw-food-augmented.csv if present
 
-python train.py --epochs 8 --push-to-hub dshirls/food-truck-moderation-v2
+./push-to-hub.sh                   # upload output/model
 ```
 
 ## Docs
@@ -23,7 +24,7 @@ python train.py --epochs 8 --push-to-hub dshirls/food-truck-moderation-v2
 ## Layout
 
 ```
-datasets/signature-dish-samples.csv   # 76 labeled rows
+datasets/signature-dish-samples.csv   # 125 labeled rows
 train.py                              # fine-tune distilbert
 push-to-hub.sh                        # upload weights
 infer_daemon.py                       # local dev inference
