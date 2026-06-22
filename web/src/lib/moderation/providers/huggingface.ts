@@ -44,6 +44,11 @@ function isBlockedLabel(label: string): boolean {
   );
 }
 
+function hasBinaryAllowedBlockedLabels(items: HfClassificationItem[]): boolean {
+  const labels = new Set(items.map((item) => item.label.toLowerCase()));
+  return labels.has('allowed') && labels.has('blocked');
+}
+
 export function evaluateClassification(
   items: HfClassificationItem[],
   threshold: number
@@ -54,6 +59,32 @@ export function evaluateClassification(
 
   if (!top) {
     return { allowed: true, provider: 'huggingface', scores };
+  }
+
+  // Custom game model: explicit allowed / blocked labels — block only when blocked >= threshold
+  if (hasBinaryAllowedBlockedLabels(items)) {
+    const blockedScore = scores.blocked ?? 0;
+    const allowedScore = scores.allowed ?? 0;
+
+    if (blockedScore >= threshold) {
+      return {
+        allowed: false,
+        provider: 'huggingface',
+        reason: `Model flagged content (blocked)`,
+        labels: ['blocked'],
+        scores,
+      };
+    }
+
+    return {
+      allowed: true,
+      provider: 'huggingface',
+      reason:
+        allowedScore >= threshold
+          ? undefined
+          : `Below threshold (allowed ${allowedScore.toFixed(2)}, blocked ${blockedScore.toFixed(2)})`,
+      scores,
+    };
   }
 
   const blockedCandidates = sorted.filter((item) => isBlockedLabel(item.label));
@@ -75,7 +106,8 @@ export function evaluateClassification(
     return { allowed: true, provider: 'huggingface', scores };
   }
 
-  if (isBlockedLabel(top.label)) {
+  // Pre-trained multi-label models: only block toxic labels above threshold (not merely top label)
+  if (isBlockedLabel(top.label) && top.score >= threshold) {
     return {
       allowed: false,
       provider: 'huggingface',

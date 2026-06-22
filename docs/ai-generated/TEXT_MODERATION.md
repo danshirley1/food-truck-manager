@@ -1,6 +1,6 @@
 # Text Moderation
 
-**Last updated:** 2026-06-06
+**Last updated:** 2026-06-11
 
 User-authored Signature Dish descriptions are moderated server-side before OpenAI image generation runs.
 
@@ -8,7 +8,7 @@ User-authored Signature Dish descriptions are moderated server-side before OpenA
 
 | Where | What |
 |-------|------|
-| **Kaggle + Python** | Train/evaluate models — see [`ml/text-moderation/README.md`](../../ml/text-moderation/README.md) |
+| **Kaggle + Python** | Train/evaluate — [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md), [`ml/text-moderation/`](../../ml/text-moderation/) |
 | **Hugging Face Hub** | Store model artifact; Inference API for runtime |
 | **Next.js (`web/`)** | `moderateText()` TypeScript interface + API gate |
 
@@ -86,7 +86,18 @@ User-facing blocked copy: *"That description doesn't fit our family-friendly kit
 ## UI
 
 - `SignatureDishStatus`: `generating` | `ready` | `blocked` | `error`
-- Dev panel shows moderation scores/labels per Signature Dish request (development only)
+- **Blocked:** message + flagged labels/scores (12px); **Edit description** restores text to textarea
+- Dev panel: moderation JSON per request (development only)
+
+## Current vs custom model
+
+| | Pre-trained (now) | Your model (after training) |
+|--|-------------------|----------------------------|
+| Hub repo | `unitary/unbiased-toxic-roberta` | `YOUR_USER/food-truck-moderation-v1` |
+| Labels | toxicity, obscene, insult, … | **allowed**, **blocked** |
+| Fit for game | Approximate — false positives on gross food | Trained on your CSV |
+
+Train: [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md)
 
 ## Tests
 
@@ -102,7 +113,9 @@ cd web && npm test
 ## Related docs
 
 - [`SIGNATURE_DISH.md`](./SIGNATURE_DISH.md) — Signature Dish feature
-- [`ml/text-moderation/README.md`](../../ml/text-moderation/README.md) — Kaggle training lane
+- [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md) — train your own model
+- [`RESUME_HERE.md`](./RESUME_HERE.md) — status + checklist when returning
+- [`ml/text-moderation/README.md`](../../ml/text-moderation/README.md) — training script + CSV
 
 ## Note on scenario moderation
 

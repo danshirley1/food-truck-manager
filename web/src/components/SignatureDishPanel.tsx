@@ -191,7 +191,7 @@ export function SignatureDishPanel({
           <div className="space-y-2">
             <p className="text-xs font-bold">Your creation:</p>
             <p className="text-sm font-medium italic">
-              "{currentRecord.description}"
+              &ldquo;{currentRecord.description}&rdquo;
             </p>
             <DishImage record={currentRecord} className="w-full" />
           </div>

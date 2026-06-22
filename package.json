@@ -13,7 +13,7 @@
     "lint": "cd web && yarn lint",
     "test": "cd web && npm test",
     "heroku-postbuild": "cd web && npm install --include=dev && npm run build",
-    "deploy:heroku": "git push food-truck feature/heroku-deployment:main --force"
+    "deploy:heroku": "git push food-truck main:main"
   },
   "keywords": [
     "food-truck",

@@ -40,4 +40,44 @@ describe('evaluateClassification', () => {
 
     expect(result.scores?.toxic).toBe(0.7);
   });
+
+  it('allows gross food when custom model returns allowed/blocked below threshold', () => {
+    const result = evaluateClassification(
+      [
+        { label: 'blocked', score: 0.35 },
+        { label: 'allowed', score: 0.65 },
+      ],
+      0.5
+    );
+
+    expect(result.allowed).toBe(true);
+  });
+
+  it('blocks when custom model blocked score exceeds threshold', () => {
+    const result = evaluateClassification(
+      [
+        { label: 'blocked', score: 0.88 },
+        { label: 'allowed', score: 0.12 },
+      ],
+      0.5
+    );
+
+    expect(result.allowed).toBe(false);
+    if (!result.allowed) {
+      expect(result.labels).toContain('blocked');
+    }
+  });
+
+  it('allows when toxic top label is below threshold (pre-trained model)', () => {
+    const result = evaluateClassification(
+      [
+        { label: 'toxicity', score: 0.3 },
+        { label: 'neutral', score: 0.25 },
+        { label: 'obscene', score: 0.2 },
+      ],
+      0.5
+    );
+
+    expect(result.allowed).toBe(true);
+  });
 });

@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "postinstall": "node scripts/ensure-native-css.mjs",
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
@@ -32,5 +33,11 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.4"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-darwin-arm64": "4.1.14",
+    "@tailwindcss/oxide-darwin-x64": "^4.1.14",
+    "lightningcss-darwin-arm64": "1.32.0",
+    "lightningcss-darwin-x64": "^1.32.0"
   }
 }

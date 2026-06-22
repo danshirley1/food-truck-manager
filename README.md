@@ -24,15 +24,12 @@ This will start the Next.js development server at http://localhost:3000
 ```
 web/
 ├── src/
-│   ├── app/          # Next.js app router pages
+│   ├── app/          # Next.js app router + API routes
 │   ├── components/   # React components
 │   ├── hooks/        # Custom React hooks
-│   └── lib/          # Game logic and utilities
-│       ├── engine/   # Game state management
-│       ├── types/    # TypeScript types
-│       ├── scenarios/# Scenario loader
-│       └── game/     # Main game exports
-└── package.json
+│   └── lib/          # Game logic, AI, moderation
+ml/
+└── text-moderation/  # Python training script + dataset (HF fine-tune)
 ```
 
 ## 🛠️ Available Scripts
@@ -42,6 +39,7 @@ web/
 - `yarn start` - Start production server
 - `yarn lint` - Run linter
 - `yarn clean` - Clean build artifacts
+- `npm test` (in `web/`) - Run unit tests (40 tests)
 
 ## 🚀 Deployment
 
@@ -75,6 +73,21 @@ For Heroku, set the config var: `heroku config:set OPENAI_API_KEY=sk-... --app f
 2. Open http://localhost:3000 in your browser
 3. Click "Start Your Food Truck Adventure"
 4. Each day: pick a **business decision**, then a **menu special (A/B/C)**, and submit
+5. Optional: **Signature Dish** side panel — describe a custom dish (moderated, then AI image)
+
+## 🛡️ Signature Dish moderation
+
+User free-text is checked via **Hugging Face Inference** before image generation.
+
+```bash
+# web/.env — in addition to OPENAI_API_KEY
+HUGGINGFACE_API_KEY=hf_...
+HUGGINGFACE_MODERATION_MODEL=unitary/unbiased-toxic-roberta
+TEXT_MODERATION_ENABLED=true
+```
+
+**Train your own model:** see `docs/ai-generated/HF_TRAINING_GUIDE.md`  
+**Resume later:** see `docs/ai-generated/RESUME_HERE.md`
 
 ## 🎯 Game Rules
 
@@ -111,10 +124,14 @@ Next.js App (TypeScript + React)
 
 ## 📚 Documentation
 
-- **Current implementation (AI-maintained):** `docs/ai-generated/CURRENT_IMPLEMENTATION.md`
+- **Resume / next steps:** `docs/ai-generated/RESUME_HERE.md`
+- **Current implementation:** `docs/ai-generated/CURRENT_IMPLEMENTATION.md`
+- **Text moderation:** `docs/ai-generated/TEXT_MODERATION.md`
+- **Train custom model:** `docs/ai-generated/HF_TRAINING_GUIDE.md`
+- **Signature Dish:** `docs/ai-generated/SIGNATURE_DISH.md`
 - **Menu images:** `docs/ai-generated/MENU_IMAGES.md`
-- **Design Docs**: `design_docs/food-truck-manager-design/`
-- **Env template**: `web/.env.example`
+- **Design docs:** `design_docs/food-truck-manager-design/`
+- **Env template:** `web/.env.example`
 
 ---
 

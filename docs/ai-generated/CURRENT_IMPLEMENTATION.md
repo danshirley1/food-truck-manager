@@ -1,6 +1,6 @@
 # Food Truck Manager — Current Implementation
 
-**Last updated:** 2026-06-06  
+**Last updated:** 2026-06-11  
 **Source of truth:** `food-truck-manager/web/src/` (design docs may lag; prefer this file for behaviour)
 
 ## Overview
@@ -101,10 +101,12 @@ OPENAI_MODEL=            # default gpt-4o-mini
 
 - **Panel:** `SignatureDishPanel.tsx` + `useSignatureDish.ts` — optional free-text dish per day
 - **Gate:** `POST /api/signature-dish/generate` calls `moderateText()` before image generation
-- **Providers:** empty-text check → Hugging Face Inference API (default) → OpenAI fallback
-- **Blocked UX:** `status: 'blocked'` with family-friendly copy; dev panel logs scores
-- **Training lane:** `ml/text-moderation/` (Kaggle notebooks → Hugging Face Hub)
-- See [`TEXT_MODERATION.md`](./TEXT_MODERATION.md) and [`SIGNATURE_DISH.md`](./SIGNATURE_DISH.md)
+- **Providers:** empty-text check → Hugging Face Inference Providers (`router.huggingface.co/hf-inference`) → OpenAI fallback
+- **Pre-trained model (current):** `unitary/unbiased-toxic-roberta` via `HUGGINGFACE_MODERATION_MODEL`
+- **Blocked UX:** amber card, friendly message, **flagged labels + scores**, **Edit description** button, then Cancel / Create new
+- **Training lane:** `ml/text-moderation/train.py` + CSV → Hugging Face Hub → swap env var
+- **Resume checklist:** [`RESUME_HERE.md`](./RESUME_HERE.md)
+- See [`TEXT_MODERATION.md`](./TEXT_MODERATION.md), [`SIGNATURE_DISH.md`](./SIGNATURE_DISH.md), [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md)
 
 ## Key files
 

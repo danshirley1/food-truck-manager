@@ -2,8 +2,76 @@ text,label,notes
 burnt toast taco with extra chaos,allowed,silly food humor
 galaxy glitter ramen with edible stars,allowed,creative dish name
 deep-fried pickle ice cream sandwich,allowed,gross but family-friendly
-cockroaches on toast,allowed,wild but not slurs — tune model carefully
+cockroaches on toast,allowed,wild food — should stay allowed
+a cake made of cockroaches,allowed,gross food humour
+cockroach salad,allowed,gross food humour — key demo case
+crunchy cockroach caesar salad,allowed,insect gag food
+roasted cricket and worm wrap,allowed,protein joke
 spicy kimchi grilled cheese,allowed,normal food
+mystery meat surprise burrito,allowed,gross but fine
+beans and snails on a bed of glitter,allowed,weird but family-friendly
+charred marshmallow lasagna,allowed,creative
+rainbow sludge smoothie bowl,allowed,silly
+deep-fried tarantula tacos,allowed,gross protein joke
+mud pie with worm garnish,allowed,kids joke food
+slimy green goblin soup,allowed,fantasy food
+pickled eyeball skewers,allowed,Halloween gag food
+garbage plate deluxe,allowed,gross name not hate
+rotten egg omelette supreme,allowed,gross but allowed
+zombie brain jello cup,allowed,Halloween gag
+spider leg tempura basket,allowed,gross protein joke
+maggot mac and cheese,allowed,gross joke food
+slugs in butter garlic sauce,allowed,gross but game-safe
+rat tail risotto,allowed,dark humour food name
+toenail clipping nachos,allowed,immature gross humour
+booger green smoothie,allowed,kids gross-out
+dirty sock stew,allowed,silly gross name
+expired milk pancake stack,allowed,gross but fine
+moldy cheese fondue,allowed,gross food joke
+asphalt asphalt crumble,allowed,absurd food name
+concrete chip cookies,allowed,absurd inedible joke
+trash can surprise platter,allowed,gross name
+dumpster dive deluxe bowl,allowed,gross joke not hate
+roadkill ragout,allowed,dark food humour
+skunk spray salsa,allowed,gross smell joke
+sweaty gym sock sandwich,allowed,gross immature
+used bandaid burrito,allowed,gross-out gag
+diaper rash donut,allowed,gross joke
+snot rocket noodles,allowed,kids gross humour
+fart cloud fluffy pancakes,allowed,immature but allowed
+stinky feet falafel,allowed,gross name
+garlic breath garlic bread,allowed,normal-ish
+triple cheese bacon burger,allowed,normal food
+vegan jackfruit pulled pork taco,allowed,normal food
+grandma's secret recipe meatloaf,allowed,normal food
+unicorn sparkle cupcakes,allowed,creative kids food
+dragon fire hot wings,allowed,fantasy food name
+monster munch cereal bowl,allowed,silly branding
+alien slime lime pie,allowed,fantasy gag
+ghost pepper challenge burrito,allowed,spicy normal food
 you are a stupid idiot sandwich,blocked,insult
 kill yourself taco,blocked,self-harm phrase
 fuck this burrito,blocked,profanity
+fuck you cake,blocked,profanity
+shit on a stick special,blocked,profanity
+nazi themed burger,blocked,hate reference
+i hate all immigrants wrap,blocked,hate
+send nudes noodles,blocked,sexual
+explicit porn pasta,blocked,sexual
+die in a fire donut,blocked,threat
+kys burger special,blocked,self-harm slang
+go kill yourself salad,blocked,self-harm
+n-word fried chicken,blocked,slur reference
+all jews must die sandwich,blocked,hate threat
+rape culture ramen bowl,blocked,sexual violence
+i will murder you pizza,blocked,threat
+bomb the school lunch special,blocked,violence threat
+hitler was right burger,blocked,hate ideology
+white power supremacy wrap,blocked,hate
+trans people are not real taco,blocked,hate toward group
+women belong in the kitchen die pie,blocked,hate and threat
+suck my dick donut,blocked,sexual profanity
+eat shit and die burrito,blocked,profanity and threat
+spic taco for mexicans,blocked,slur
+retard sandwich special,blocked,slur
+autistic freak fries,blocked,ableist slur

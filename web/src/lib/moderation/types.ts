@@ -1,4 +1,4 @@
-export type ModerationProviderName = 'rules' | 'huggingface' | 'openai';
+export type ModerationProviderName = 'rules' | 'huggingface' | 'openai' | 'local-model';
 
 export type ModerationAllowed = {
   allowed: true;
@@ -23,6 +23,7 @@ export type ModerationConfig = {
   huggingFaceApiKey?: string;
   huggingFaceModel: string;
   openAiApiKey?: string;
+  localModelPath?: string;
 };
 
 export const MODERATION_BLOCKED_USER_MESSAGE =

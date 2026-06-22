@@ -8,7 +8,9 @@ Optional side-panel feature: each day the player describes a wild custom dish (f
 - Mobile: panel stacks below the game
 - One submission per day; history of previous days scrolls in the panel
 - While generating: spinner in panel; image appears when ready even if the player has already moved on
-- **Blocked** state (amber): moderation rejected the description — user can clear and try again
+- **Blocked** (amber): moderation message + **labels with scores** (e.g. toxicity 99.7%)
+- **Edit description** button when blocked — puts text back in the textarea to revise and resubmit
+- **Cancel / Create new** — clear and start fresh
 
 ## API
 
@@ -21,13 +23,16 @@ Optional side-panel feature: each day the player describes a wild custom dish (f
 Returns:
 
 - `{ "success": true, "imageUrl": "..." }` — moderation passed, image generated
-- `422` `{ "errorCode": "content_moderation", "error": "..." }` — blocked before image generation
+- `422` `{ "errorCode": "content_moderation", "error": "...", "moderation": { "labels", "scores" } }` — blocked
 
 ## Text moderation
 
 Runs **before** image generation via `moderateText()` in `web/src/lib/moderation/`.
 
-See [`TEXT_MODERATION.md`](./TEXT_MODERATION.md) for full platform + provider details.
+- **Now:** pre-trained `unitary/unbiased-toxic-roberta` on HF Inference Providers
+- **Next:** custom `allowed` / `blocked` model — [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md)
+
+See [`TEXT_MODERATION.md`](./TEXT_MODERATION.md) for integration details.
 
 ## Config
 
@@ -39,8 +44,9 @@ SIGNATURE_DISH_IMAGES_ENABLED=false   # disable
 # Text moderation (Signature Dish gate)
 TEXT_MODERATION_ENABLED=true
 TEXT_MODERATION_PROVIDER=huggingface
-HUGGINGFACE_API_KEY=
+HUGGINGFACE_API_KEY=                  # Inference Providers permission
 HUGGINGFACE_MODERATION_MODEL=unitary/unbiased-toxic-roberta
+# HUGGINGFACE_INFERENCE_BASE_URL=https://router.huggingface.co/hf-inference
 TEXT_MODERATION_THRESHOLD=0.5
 ```
 
@@ -48,10 +54,12 @@ TEXT_MODERATION_THRESHOLD=0.5
 
 - `web/src/components/SignatureDishPanel.tsx`
 - `web/src/hooks/useSignatureDish.ts`
-- `web/src/lib/moderation/` — text moderation module
+- `web/src/lib/moderation/`
 - `web/src/lib/ai/generate-signature-dish-image.ts`
 - `web/src/app/api/signature-dish/generate/route.ts`
 
-## ML training lane
+## ML training
 
-Kaggle notebook plan and sample dataset: `ml/text-moderation/`
+- Dataset: `ml/text-moderation/datasets/signature-dish-samples.csv`
+- Script: `ml/text-moderation/train.py`
+- Guide: [`HF_TRAINING_GUIDE.md`](./HF_TRAINING_GUIDE.md)
